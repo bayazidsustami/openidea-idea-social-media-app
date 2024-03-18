@@ -22,6 +22,7 @@ func envBinder() {
 	viper.BindEnv("S3_ID")
 	viper.BindEnv("S3_SECRET_KEY")
 	viper.BindEnv("S3_BUCKET_NAME")
+	viper.BindEnv("S3_REGION")
 
 	/**
 	 * Env variable related to encrypt and hash
