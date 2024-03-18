@@ -18,6 +18,8 @@ func StartFiberApp() {
 
 	app.Use(logger.New())
 
+	RegisterRoute(app)
+
 	err := app.Listen("localhost:8000")
 	log.Fatal(err)
 }
