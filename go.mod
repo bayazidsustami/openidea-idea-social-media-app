@@ -3,6 +3,7 @@ module openidea-idea-social-media-app
 go 1.21.3
 
 require (
+	github.com/goccy/go-json v0.10.2
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/spf13/viper v1.18.2
 )

@@ -4,12 +4,15 @@ import (
 	"log"
 	"openidea-idea-social-media-app/config"
 
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func StartFiberApp() {
 	app := fiber.New(fiber.Config{
+		JSONEncoder:  json.Marshal,
+		JSONDecoder:  json.Unmarshal,
 		IdleTimeout:  config.IdleTimeout,
 		WriteTimeout: config.WriteTimeout,
 		ReadTimeout:  config.ReadTimeout,
