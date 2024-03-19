@@ -39,7 +39,12 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	var idUser int
 	err := tx.QueryRow(ctx, SQL_INSERT, emailOrPhone, user.Password, user.Name).Scan(&idUser)
 	if err != nil {
-		return user_model.User{}, customErr.ErrorConflict
+		if err == pgx.ErrNoRows {
+			return user_model.User{}, customErr.ErrorConflict
+		} else {
+			return user_model.User{}, customErr.ErrorInternalServer
+		}
+
 	}
 
 	user.UserId = idUser
