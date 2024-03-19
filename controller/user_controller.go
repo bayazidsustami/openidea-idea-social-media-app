@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 	"openidea-idea-social-media-app/service"
@@ -26,10 +25,13 @@ func (controller *UserController) Register(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(userRequest)
 	if err != nil {
-		log.Fatal(customErr.ErrorBadRequest)
+		return customErr.ErrorBadRequest
 	}
 
-	response := controller.UserService.Register(ctx.UserContext(), *userRequest)
+	response, err := controller.UserService.Register(ctx.UserContext(), *userRequest)
+	if err != nil {
+		return err
+	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(response)
 }

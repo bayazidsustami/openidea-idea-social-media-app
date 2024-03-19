@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"log"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 
@@ -10,7 +9,7 @@ import (
 )
 
 type UserRepository interface {
-	Register(ctx context.Context, tx pgx.Tx, user user_model.User) user_model.User
+	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -20,7 +19,7 @@ func New() UserRepository {
 	return &UserRepositoryImpl{}
 }
 
-func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, user user_model.User) user_model.User {
+func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error) {
 	var SQL_INSERT string
 	var emailOrPhone string
 	if user.Email != "" {
@@ -38,10 +37,10 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	var idUser int
 	err := tx.QueryRow(ctx, SQL_INSERT, emailOrPhone, user.Password, user.Name).Scan(&idUser)
 	if err != nil {
-		log.Fatal(customErr.ErrorConflict)
+		return user_model.User{}, customErr.ErrorConflict
 	}
 
 	user.UserId = idUser
 
-	return user
+	return user, nil
 }
