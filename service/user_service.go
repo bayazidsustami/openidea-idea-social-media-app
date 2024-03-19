@@ -33,6 +33,7 @@ func NewUserService(
 		UserRepository: userRepository,
 		Validator:      validator,
 		DBPool:         dbPool,
+		AuthService:    authService,
 	}
 }
 
@@ -56,19 +57,23 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 	defer tx.Rollback(ctx)
 
 	hashedPass, err := security.GenerateHashedPassword(request.Password)
-
 	if err != nil {
 		return user_model.UserRegisterResponse[user_model.UserData]{}, err
 	}
 
-	user := user_model.User{
-		Password: hashedPass,
-	}
-
+	var user user_model.User
 	if request.CredentialType == "email" {
-		user.Email = request.CredentialValue
+		user = user_model.User{
+			Password: hashedPass,
+			Name:     request.Name,
+			Email:    request.CredentialValue,
+		}
 	} else {
-		user.Password = request.CredentialValue
+		user = user_model.User{
+			Password: hashedPass,
+			Name:     request.Name,
+			Phone:    request.CredentialValue,
+		}
 	}
 
 	userResult, err := service.UserRepository.Register(ctx, tx, user)

@@ -4,6 +4,7 @@ import (
 	"log"
 	"openidea-idea-social-media-app/config"
 	"openidea-idea-social-media-app/customErr"
+	"openidea-idea-social-media-app/db"
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
@@ -18,13 +19,17 @@ func StartFiberApp() {
 		IdleTimeout:  config.IdleTimeout,
 		WriteTimeout: config.WriteTimeout,
 		ReadTimeout:  config.ReadTimeout,
-		Prefork:      true,
 	})
 
-	app.Use(logger.New())
-	app.Use(recover.New())
+	dbPool := db.GetConnectionPool()
+	defer dbPool.Close()
 
-	RegisterRoute(app)
+	app.Use(logger.New())
+	app.Use(recover.New(recover.Config{
+		EnableStackTrace: true,
+	}))
+
+	RegisterRoute(app, dbPool)
 
 	app.Use(customErr.NotFoundHandler)
 

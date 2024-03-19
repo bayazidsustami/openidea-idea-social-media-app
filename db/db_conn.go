@@ -25,18 +25,22 @@ var (
 func GetConnectionPool() *pgxpool.Pool {
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", applicationDbUsername, applicationDbPassword, applicationDbHost, applicationDbPort, applicationDbName)
 	config, err := pgxpool.ParseConfig(dbUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	config.MaxConnLifetime = maxConnLifeTime
 	config.MaxConnIdleTime = maxConnIdleTime
 	config.MaxConns = maxConns
 	config.MinConns = minConns
+	config.ConnConfig.ConnectTimeout = 10 * time.Second
 
+	dbPool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dbPool, err := pgxpool.NewWithConfig(context.Background(), config)
-
+	err = dbPool.Ping(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}

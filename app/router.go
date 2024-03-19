@@ -2,7 +2,6 @@ package app
 
 import (
 	"openidea-idea-social-media-app/controller"
-	"openidea-idea-social-media-app/db"
 	"openidea-idea-social-media-app/repository"
 	"openidea-idea-social-media-app/security"
 	"openidea-idea-social-media-app/service"
@@ -10,14 +9,13 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func RegisterRoute(app *fiber.App) {
+func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 
 	validator := validator.New()
 	validation.RegisterValidation(validator)
-
-	dbPool := db.GetConnectionPool()
 
 	authService := service.NewAuthService()
 
