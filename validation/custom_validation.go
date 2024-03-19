@@ -8,10 +8,11 @@ import (
 )
 
 func RegisterValidation(validator *validator.Validate) {
-	validator.RegisterStructValidation(mustValidRegisterRequest, user_model.UserRegisterRequest{})
+	validator.RegisterStructValidation(mustValidUserRequest, user_model.UserRegisterRequest{})
+	validator.RegisterStructValidation(mustValidUserRequest, user_model.UserLoginRequest{})
 }
 
-func mustValidRegisterRequest(sl validator.StructLevel) {
+func mustValidUserRequest(sl validator.StructLevel) {
 	registerRequest := sl.Current().Interface().(user_model.UserRegisterRequest)
 
 	if registerRequest.CredentialType == "email" {
