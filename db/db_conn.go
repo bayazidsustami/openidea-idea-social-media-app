@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -16,34 +17,39 @@ var (
 	applicationDbPassword = viper.GetString("DB_PASSWORD")
 	applicationDbHost     = viper.GetString("DB_HOST")
 	applicationDbPort     = viper.GetString("DB_PORT")
+	maxTimeout            = 20 * time.Second
 	maxConnLifeTime       = 60 * time.Minute
 	maxConnIdleTime       = 5 * time.Minute
 	maxConns              = int32(100)
 	minConns              = int32(10)
+	dbPool                *pgxpool.Pool
+	once                  sync.Once
 )
 
 func GetConnectionPool() *pgxpool.Pool {
-	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", applicationDbUsername, applicationDbPassword, applicationDbHost, applicationDbPort, applicationDbName)
-	config, err := pgxpool.ParseConfig(dbUrl)
-	if err != nil {
-		log.Fatal(err)
-	}
+	once.Do(func() {
+		dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", applicationDbUsername, applicationDbPassword, applicationDbHost, applicationDbPort, applicationDbName)
+		config, err := pgxpool.ParseConfig(dbUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	config.MaxConnLifetime = maxConnLifeTime
-	config.MaxConnIdleTime = maxConnIdleTime
-	config.MaxConns = maxConns
-	config.MinConns = minConns
-	config.ConnConfig.ConnectTimeout = 10 * time.Second
+		config.MaxConnLifetime = maxConnLifeTime
+		config.MaxConnIdleTime = maxConnIdleTime
+		config.MaxConns = maxConns
+		config.MinConns = minConns
+		config.ConnConfig.ConnectTimeout = maxTimeout
 
-	dbPool, err := pgxpool.NewWithConfig(context.Background(), config)
-	if err != nil {
-		log.Fatal(err)
-	}
+		dbPool, err = pgxpool.NewWithConfig(context.Background(), config)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	err = dbPool.Ping(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
+		err = dbPool.Ping(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 
 	return dbPool
 }

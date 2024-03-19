@@ -19,6 +19,7 @@ func StartFiberApp() {
 		IdleTimeout:  config.IdleTimeout,
 		WriteTimeout: config.WriteTimeout,
 		ReadTimeout:  config.ReadTimeout,
+		Prefork:      true,
 	})
 
 	dbPool := db.GetConnectionPool()
