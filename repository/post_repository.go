@@ -17,7 +17,7 @@ type PostRepositoryImpl struct {
 	DBPool *pgxpool.Pool
 }
 
-func New(DBPool *pgxpool.Pool) PostRepository {
+func NewPostRepository(DBPool *pgxpool.Pool) PostRepository {
 	return &PostRepositoryImpl{
 		DBPool: DBPool,
 	}
