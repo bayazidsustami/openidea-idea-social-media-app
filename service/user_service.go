@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 	"openidea-idea-social-media-app/repository"
@@ -65,13 +66,13 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 		user = user_model.User{
 			Password: hashedPass,
 			Name:     request.Name,
-			Email:    request.CredentialValue,
+			Email:    sql.NullString{String: request.CredentialValue},
 		}
 	} else {
 		user = user_model.User{
 			Password: hashedPass,
 			Name:     request.Name,
-			Phone:    request.CredentialValue,
+			Phone:    sql.NullString{String: request.CredentialValue},
 		}
 	}
 
@@ -90,7 +91,7 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 		return user_model.UserRegisterResponse[user_model.UserData]{
 			Message: "User registered successfully",
 			Data: &user_model.UserEmailDataResponse{
-				Email:       userResult.Email,
+				Email:       userResult.Email.String,
 				Name:        userResult.Name,
 				AccessToken: token,
 			},
@@ -99,7 +100,7 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 		return user_model.UserRegisterResponse[user_model.UserData]{
 			Message: "User registered successfully",
 			Data: &user_model.UserPhoneDataResponse{
-				Phone:       userResult.Phone,
+				Phone:       userResult.Phone.String,
 				Name:        userResult.Name,
 				AccessToken: token,
 			},
@@ -123,11 +124,11 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 	var user user_model.User
 	if request.CredentialType == "email" {
 		user = user_model.User{
-			Email: request.CredentialValue,
+			Email: sql.NullString{String: request.CredentialValue},
 		}
 	} else {
 		user = user_model.User{
-			Phone: request.CredentialValue,
+			Phone: sql.NullString{String: request.CredentialValue},
 		}
 	}
 
@@ -151,8 +152,8 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 		Data: user_model.UserEmailPhoneDataResponse{
 			Name:        result.Name,
 			AccessToken: token,
-			Email:       result.Email,
-			Phone:       result.Phone,
+			Email:       result.Email.String,
+			Phone:       result.Phone.String,
 		},
 	}
 

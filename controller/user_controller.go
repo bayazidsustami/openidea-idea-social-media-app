@@ -35,3 +35,19 @@ func (controller *UserController) Register(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusCreated).JSON(response)
 }
+
+func (controller *UserController) Login(ctx *fiber.Ctx) error {
+	userRequest := new(user_model.UserLoginRequest)
+
+	err := ctx.BodyParser(userRequest)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	response, err := controller.UserService.Login(ctx.UserContext(), *userRequest)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(response)
+}

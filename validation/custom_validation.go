@@ -8,12 +8,30 @@ import (
 )
 
 func RegisterValidation(validator *validator.Validate) {
-	validator.RegisterStructValidation(mustValidUserRequest, user_model.UserRegisterRequest{})
-	validator.RegisterStructValidation(mustValidUserRequest, user_model.UserLoginRequest{})
+	validator.RegisterStructValidation(mustValidRegisterRequest, user_model.UserRegisterRequest{})
+	validator.RegisterStructValidation(mustValidLoginRequest, user_model.UserLoginRequest{})
 }
 
-func mustValidUserRequest(sl validator.StructLevel) {
+func mustValidRegisterRequest(sl validator.StructLevel) {
 	registerRequest := sl.Current().Interface().(user_model.UserRegisterRequest)
+
+	if registerRequest.CredentialType == "email" {
+		email := registerRequest.CredentialValue
+		if !isValidEmail(email) {
+			sl.ReportError(registerRequest.CredentialType, "CredentialValue", "CredentialValue", "credentialValue", "")
+		}
+	} else if registerRequest.CredentialType == "phone" {
+		phone := registerRequest.CredentialValue
+		if !isValidPhone(phone) {
+			sl.ReportError(registerRequest.CredentialType, "CredentialValue", "CredentialValue", "credentialValue", "")
+		}
+	} else {
+		sl.ReportError(registerRequest.CredentialType, "CredentialType", "CredentialType", "credentialType", "")
+	}
+}
+
+func mustValidLoginRequest(sl validator.StructLevel) {
+	registerRequest := sl.Current().Interface().(user_model.UserLoginRequest)
 
 	if registerRequest.CredentialType == "email" {
 		email := registerRequest.CredentialValue
