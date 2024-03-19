@@ -36,18 +36,18 @@ func New(
 func (service *UserServiceImpl) Register(ctx context.Context, request user_model.UserRegisterRequest) user_model.UserRegisterResponse[user_model.UserData] {
 	err := service.Validator.Struct(request)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(customErr.ErrorBadRequest)
 	}
 
 	conn, err := service.DBPool.Acquire(ctx)
 	if err != nil {
-		log.Fatal(customErr.ErrorInternalServer)
+		log.Panic(customErr.ErrorInternalServer)
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
-		log.Fatal(customErr.ErrorInternalServer)
+		log.Panic(customErr.ErrorInternalServer)
 	}
 	defer tx.Rollback(ctx)
 

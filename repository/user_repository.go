@@ -16,6 +16,10 @@ type UserRepository interface {
 type UserRepositoryImpl struct {
 }
 
+func New() UserRepository {
+	return &UserRepositoryImpl{}
+}
+
 func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, user user_model.User) user_model.User {
 	var SQL_INSERT string
 	var emailOrPhone string
