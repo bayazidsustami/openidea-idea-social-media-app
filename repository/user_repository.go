@@ -41,6 +41,6 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	}
 
 	user.UserId = idUser
-
+	tx.Commit(ctx)
 	return user, nil
 }

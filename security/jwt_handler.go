@@ -11,7 +11,7 @@ func GetJwtTokenHandler() fiber.Handler {
 		SigningKey: jwtware.SigningKey{Key: []byte(viper.GetString("JWT_SECRET"))},
 		ContextKey: "userInfo",
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
-			return fiber.NewError(fiber.StatusForbidden, err.Error())
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		},
 	})
 }

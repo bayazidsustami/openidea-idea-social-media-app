@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GenrateHashedPassword(reqPassword string) (string, error) {
+func GenerateHashedPassword(reqPassword string) (string, error) {
 	hashedPass, err := bcrypt.GenerateFromPassword([]byte(reqPassword), viper.GetInt("BCRYPT_SALT"))
 	if err != nil {
 		return "", customErr.ErrorInternalServer
