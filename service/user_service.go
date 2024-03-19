@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 	"openidea-idea-social-media-app/repository"
@@ -14,6 +13,7 @@ import (
 
 type UserService interface {
 	Register(ctx context.Context, request user_model.UserRegisterRequest) (user_model.UserRegisterResponse[user_model.UserData], error)
+	Login(ctx context.Context, request user_model.UserLoginRequest) (user_model.UserLoginResponse, error)
 }
 
 type UserServiceImpl struct {
@@ -40,7 +40,6 @@ func NewUserService(
 func (service *UserServiceImpl) Register(ctx context.Context, request user_model.UserRegisterRequest) (user_model.UserRegisterResponse[user_model.UserData], error) {
 	err := service.Validator.Struct(request)
 	if err != nil {
-		log.Println(err)
 		return user_model.UserRegisterResponse[user_model.UserData]{}, customErr.ErrorBadRequest
 	}
 
@@ -107,4 +106,55 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 		}, nil
 	}
 
+}
+
+func (service *UserServiceImpl) Login(ctx context.Context, request user_model.UserLoginRequest) (user_model.UserLoginResponse, error) {
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return user_model.UserLoginResponse{}, customErr.ErrorBadRequest
+	}
+
+	conn, err := service.DBPool.Acquire(ctx)
+	if err != nil {
+		return user_model.UserLoginResponse{}, customErr.ErrorInternalServer
+	}
+	defer conn.Release()
+
+	var user user_model.User
+	if request.CredentialType == "email" {
+		user = user_model.User{
+			Email: request.CredentialValue,
+		}
+	} else {
+		user = user_model.User{
+			Phone: request.CredentialValue,
+		}
+	}
+
+	result, err := service.UserRepository.Login(ctx, conn, user)
+	if err != nil {
+		return user_model.UserLoginResponse{}, err
+	}
+
+	err = security.ComparePassword(result.Password, request.Password)
+	if err != nil {
+		return user_model.UserLoginResponse{}, err
+	}
+
+	token, err := service.AuthService.GenerateToken(ctx, result.UserId)
+	if err != nil {
+		return user_model.UserLoginResponse{}, err
+	}
+
+	userResponse := user_model.UserLoginResponse{
+		Message: "User logged successfully",
+		Data: user_model.UserEmailPhoneDataResponse{
+			Name:        result.Name,
+			AccessToken: token,
+			Email:       result.Email,
+			Phone:       result.Phone,
+		},
+	}
+
+	return userResponse, nil
 }

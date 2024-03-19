@@ -6,11 +6,12 @@ import (
 	user_model "openidea-idea-social-media-app/models/user"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepository interface {
 	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
-	Login(ctx context.Context, conn pgx.Conn, user user_model.User) (user_model.User, error)
+	Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -46,7 +47,7 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	return user, nil
 }
 
-func (repository *UserRepositoryImpl) Login(ctx context.Context, conn pgx.Conn, user user_model.User) (user_model.User, error) {
+func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error) {
 	var SQL_GET_USER string
 	var emailOrPhone string
 	if user.Email != "" {
