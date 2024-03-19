@@ -41,13 +41,13 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 
 	conn, err := service.DBPool.Acquire(ctx)
 	if err != nil {
-		panic(customErr.ErrorInternalServer)
+		log.Fatal(customErr.ErrorInternalServer)
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
-		panic(customErr.ErrorInternalServer)
+		log.Fatal(customErr.ErrorInternalServer)
 	}
 	defer tx.Rollback(ctx)
 
