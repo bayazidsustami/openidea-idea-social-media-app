@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 
@@ -33,7 +34,7 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	var idUser int
 	err := tx.QueryRow(ctx, SQL_INSERT, emailOrPhone, user.Password, user.Name).Scan(&idUser)
 	if err != nil {
-		panic(customErr.ErrorConflict)
+		log.Fatal(customErr.ErrorConflict)
 	}
 
 	user.UserId = idUser

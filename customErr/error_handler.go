@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	ErrorNotFound     = errors.New("not found")
-	ErrorBadRequest   = errors.New("bad request")
-	ErrorUnauthorized = errors.New("Unauthorized")
-	ErrorConflict     = errors.New("value is already exists")
+	ErrorNotFound       = errors.New("not found")
+	ErrorBadRequest     = errors.New("bad request")
+	ErrorUnauthorized   = errors.New("Unauthorized")
+	ErrorConflict       = errors.New("value is already exists")
+	ErrorInternalServer = errors.New("internal error")
 )
 
 func ErrorHandler(ctx *fiber.Ctx, err error) error {
@@ -26,6 +27,6 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	case errors.Is(err, ErrorConflict):
 		return fiber.NewError(fiber.StatusConflict, err.Error())
 	default:
-		return fiber.NewError(code, "Oops!, Something Error - Message : "+err.Error())
+		return fiber.NewError(code, "internal error - message :"+err.Error())
 	}
 }
