@@ -10,6 +10,7 @@ import (
 
 type UserRepository interface {
 	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
+	Login(ctx context.Context, conn pgx.Conn, user user_model.User) (user_model.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -43,4 +44,32 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	user.UserId = idUser
 	tx.Commit(ctx)
 	return user, nil
+}
+
+func (repository *UserRepositoryImpl) Login(ctx context.Context, conn pgx.Conn, user user_model.User) (user_model.User, error) {
+	var SQL_GET_USER string
+	var emailOrPhone string
+	if user.Email != "" {
+		SQL_GET_USER = "SELECT user_id, email, phone, name FROM users WHERE email=$1"
+		emailOrPhone = user.Email
+	} else {
+		SQL_GET_USER = "SELECT user_id, email, phone, name FROM users WHERE phone=$1"
+		emailOrPhone = user.Email
+	}
+
+	result := user_model.User{}
+	err := conn.QueryRow(ctx, SQL_GET_USER, emailOrPhone).Scan(
+		&result.Email,
+		&result.Phone,
+		&result.Name,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return user_model.User{}, customErr.ErrorNotFound
+		} else {
+			return user_model.User{}, customErr.ErrorInternalServer
+		}
+	}
+
+	return result, nil
 }
