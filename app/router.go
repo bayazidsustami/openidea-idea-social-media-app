@@ -25,6 +25,7 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 
 	api := app.Group("/v1")
 	api.Post("/user/register", userController.Register)
+	api.Post("/user/login", userController.Login)
 
 	app.Use(security.CheckTokenHeaderExist)
 	app.Use(security.GetJwtTokenHandler())
