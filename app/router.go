@@ -19,7 +19,7 @@ func RegisterRoute(app *fiber.App) {
 	dbPool := db.GetConnectionPool()
 
 	userRepository := repository.New()
-	userService := service.New(userRepository, validator, dbPool)
+	userService := service.NewUserService(userRepository, validator, dbPool)
 	userController := controller.New(userService)
 
 	api := app.Group("/v1")

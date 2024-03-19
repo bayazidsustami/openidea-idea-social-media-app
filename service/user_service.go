@@ -21,7 +21,7 @@ type UserServiceImpl struct {
 	DBPool         *pgxpool.Pool
 }
 
-func New(
+func NewUserService(
 	userRepository repository.UserRepository,
 	validator *validator.Validate,
 	dbPool *pgxpool.Pool,
