@@ -28,3 +28,15 @@ type UserPhoneDataResponse struct {
 func (up *UserPhoneDataResponse) GetName() string {
 	return up.Name
 }
+
+type UserLoginResponse struct {
+	Message string                     `json:"message"`
+	Data    UserEmailPhoneDataResponse `json:"data"`
+}
+
+type UserEmailPhoneDataResponse struct {
+	Email       string `json:"email"`
+	Phone       string `json:"phone"`
+	Name        string `json:"name"`
+	AccessToken string `json:"accessToken"`
+}

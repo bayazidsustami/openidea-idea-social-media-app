@@ -1,32 +1,19 @@
 package customErr
 
 import (
-	"errors"
-
 	"github.com/gofiber/fiber/v2"
 )
 
 var (
-	ErrorNotFound       = errors.New("not found")
-	ErrorBadRequest     = errors.New("bad request")
-	ErrorUnauthorized   = errors.New("Unauthorized")
-	ErrorConflict       = errors.New("value is already exists")
-	ErrorInternalServer = errors.New("internal error")
+	ErrorNotFound       = fiber.NewError(fiber.StatusNotFound, "not found")
+	ErrorBadRequest     = fiber.NewError(fiber.StatusBadRequest, "bad request")
+	ErrorUnauthorized   = fiber.NewError(fiber.StatusUnauthorized, "unauthorizex")
+	ErrorConflict       = fiber.NewError(fiber.StatusConflict, "value already exists")
+	ErrorInternalServer = fiber.NewError(fiber.StatusInternalServerError, "internal error")
 )
 
-func ErrorHandler(ctx *fiber.Ctx, err error) error {
-	code := fiber.StatusInternalServerError
-
-	switch {
-	case errors.Is(err, ErrorNotFound):
-		return fiber.NewError(fiber.StatusNotFound, err.Error())
-	case errors.Is(err, ErrorBadRequest):
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	case errors.Is(err, ErrorUnauthorized):
-		return fiber.NewError(fiber.StatusUnauthorized, err.Error())
-	case errors.Is(err, ErrorConflict):
-		return fiber.NewError(fiber.StatusConflict, err.Error())
-	default:
-		return fiber.NewError(code, "internal error - message :"+err.Error())
-	}
+func NotFoundHandler(ctx *fiber.Ctx) error {
+	return ctx.Status(404).JSON(fiber.Map{
+		"message": "Not Found",
+	})
 }
