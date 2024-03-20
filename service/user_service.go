@@ -15,8 +15,8 @@ import (
 type UserService interface {
 	Register(ctx context.Context, request user_model.UserRegisterRequest) (user_model.UserRegisterResponse[user_model.UserData], error)
 	Login(ctx context.Context, request user_model.UserLoginRequest) (user_model.UserLoginResponse, error)
-	LinkEmail(ctx context.Context, userId int, email string) error
-	LinkPhone(ctx context.Context, userId int, phone string) error
+	LinkEmail(ctx context.Context, userId int, emailReq user_model.UpdateEmailRequest) error
+	LinkPhone(ctx context.Context, userId int, phoneReq user_model.UpdatePhoneRequest) error
 }
 
 type UserServiceImpl struct {
@@ -162,13 +162,18 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 	return userResponse, nil
 }
 
-func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId int, email string) error {
+func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId int, emailReq user_model.UpdateEmailRequest) error {
+	err := service.Validator.Struct(emailReq)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
 	conn, err := service.DBPool.Acquire(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
 	}
 	defer conn.Release()
-	err = service.UserRepository.UpdateEmail(ctx, conn, userId, email)
+	err = service.UserRepository.UpdateEmail(ctx, conn, userId, emailReq.Email)
 	if err != nil {
 		return err
 	}
@@ -176,13 +181,18 @@ func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId int, email
 	return nil
 }
 
-func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId int, phone string) error {
+func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId int, phoneReq user_model.UpdatePhoneRequest) error {
+	err := service.Validator.Struct(phoneReq)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
 	conn, err := service.DBPool.Acquire(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
 	}
 	defer conn.Release()
-	err = service.UserRepository.UpdatePhone(ctx, conn, userId, phone)
+	err = service.UserRepository.UpdatePhone(ctx, conn, userId, phoneReq.Phone)
 	if err != nil {
 		return err
 	}
