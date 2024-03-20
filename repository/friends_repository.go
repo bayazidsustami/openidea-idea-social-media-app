@@ -53,7 +53,30 @@ func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends
 }
 
 func (repository *FriendsRepositoryImpl) Delete(ctx context.Context, userFriends friend_model.Friend) error {
+	SQL_DELETE_FRIENDS := "DELETE FROM friends WHERE user_id_requester = $1 AND user_id_accepter = $2 " +
+		"OR user_id_accepter = $1 AND user_id_requester = $2"
+
+	conn, err := repository.DBPool.Acquire(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+	defer conn.Release()
+
+	res, err := conn.Exec(ctx, SQL_DELETE_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorBadRequest
+	}
+
 	return nil
+
 }
 
 func (repository *FriendsRepositoryImpl) Get() {
