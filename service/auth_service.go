@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"openidea-idea-social-media-app/customErr"
+	"openidea-idea-social-media-app/security"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,8 +12,6 @@ import (
 )
 
 var tokenExpDuration = time.Now().Add(time.Minute * 30).Unix()
-
-const JWT_TOKEN_LOCALS = "userInfo"
 
 type AuthService interface {
 	GenerateToken(ctx context.Context, userId int) (string, error)
@@ -29,8 +28,8 @@ func NewAuthService() AuthService {
 func (service *AuthServiceImpl) GenerateToken(ctx context.Context, userId int) (string, error) {
 
 	claims := jwt.MapClaims{
-		"username": userId,
-		"exp":      tokenExpDuration,
+		"user_id": userId,
+		"exp":     tokenExpDuration,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -44,8 +43,8 @@ func (service *AuthServiceImpl) GenerateToken(ctx context.Context, userId int) (
 }
 
 func (service *AuthServiceImpl) GetValidUser(ctx *fiber.Ctx) (int, error) {
-	userInfo := ctx.Locals(JWT_TOKEN_LOCALS).(*jwt.Token)
-	claims := userInfo.Claims.(jwt.MapClaims)
+	userInfo := ctx.Locals(security.JWT_CONTEXT_KEY).(*jwt.Token)
+	claims := userInfo.Claims.((jwt.MapClaims))
 	userId := claims["user_id"].(float64)
 
 	return int(userId), nil

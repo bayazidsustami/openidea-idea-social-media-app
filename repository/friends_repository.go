@@ -19,9 +19,17 @@ type FriendsRepositoryImpl struct {
 	DBPool *pgxpool.Pool
 }
 
+func NewFriendRepository(
+	dbPool *pgxpool.Pool,
+) FriendsRepository {
+	return &FriendsRepositoryImpl{
+		DBPool: dbPool,
+	}
+}
+
 func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends friend_model.Friend) error {
-	SQL_ADD_FRIENDS := "INSERT INTO user_id_requester, user_id_accepter VALUES($1, $2) " +
-		"ON CONFLICT (user_id_requester, user_id_accepter) DO NOTHING;"
+	SQL_ADD_FRIENDS := "INSERT INTO friends(user_id_requester, user_id_accepter) VALUES($1, $2) " +
+		"ON CONFLICT (user_id_requester, user_id_accepter) DO NOTHING"
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
@@ -46,4 +54,8 @@ func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends
 
 func (repository *FriendsRepositoryImpl) Delete(ctx context.Context, userFriends friend_model.Friend) error {
 	return nil
+}
+
+func (repository *FriendsRepositoryImpl) Get() {
+
 }
