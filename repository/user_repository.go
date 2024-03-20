@@ -97,7 +97,7 @@ func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgx
 				END
 		WHERE user_id = $2
 		AND (email IS NULL OR email = '')
-		ON CONFLICT (email) DO NOTHING;
+		ON CONFLICT (email) DO NOTHING
 	`
 	res, err := conn.Exec(ctx, UPDATE_EMAIL, email, userId)
 	if err != nil {
@@ -125,7 +125,7 @@ func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgx
 				END
 		WHERE user_id = $2
 		AND (phone IS NULL OR phone = '')
-		ON CONFLICT (phone) DO NOTHING;
+		ON CONFLICT (phone) DO NOTHING
 	`
 	res, err := conn.Exec(ctx, UPDATE_PHONE, phone, userId)
 	if err != nil {
