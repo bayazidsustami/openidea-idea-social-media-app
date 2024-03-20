@@ -14,7 +14,7 @@ type FriendData struct {
 	UserId      int
 	Name        string
 	ImageUrl    string
-	FriendCount string
+	FriendCount int
 	CreatedAt   *time.Time
 }
 

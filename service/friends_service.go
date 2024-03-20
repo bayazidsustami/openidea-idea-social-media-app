@@ -12,6 +12,7 @@ import (
 type FriendsService interface {
 	AddFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error
 	RemoveFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error
+	GetAllFriends(ctx context.Context, userId int, filterRequest friend_model.FilterFriends) (friend_model.FriendsPagingResponse, error)
 }
 
 type FriendsServiceImpl struct {
@@ -65,4 +66,42 @@ func (service *FriendsServiceImpl) RemoveFriends(ctx context.Context, userId int
 	}
 
 	return nil
+}
+
+func (service *FriendsServiceImpl) GetAllFriends(ctx context.Context, userId int, filterRequest friend_model.FilterFriends) (friend_model.FriendsPagingResponse, error) {
+	err := service.Validator.Struct(filterRequest)
+	if err != nil {
+		return friend_model.FriendsPagingResponse{}, customErr.ErrorBadRequest
+	}
+
+	if filterRequest.Limit <= 5 {
+		filterRequest.Limit = 5
+	}
+
+	if filterRequest.Offset == 0 {
+		filterRequest.Offset = 0
+	}
+
+	res, err := service.FriendsRepository.GetAll(ctx, userId, filterRequest)
+	if err != nil {
+		return friend_model.FriendsPagingResponse{}, err
+	}
+
+	var responseData []friend_model.FriendDataResponse
+	for _, v := range res.Data {
+		data := friend_model.FriendDataResponse{
+			UserId:      v.UserId,
+			Name:        v.Name,
+			ImageUrl:    v.ImageUrl,
+			FriendCount: v.FriendCount,
+			CreatedAt:   v.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
+		}
+		responseData = append(responseData, data)
+	}
+
+	return friend_model.FriendsPagingResponse{
+		Message: "Success",
+		Data:    responseData,
+		Meta:    res.Meta,
+	}, nil
 }
