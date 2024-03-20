@@ -94,5 +94,5 @@ func (controller *UserController) UpdatePhone(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.SendString("successfully linked email")
+	return ctx.SendString("successfully linked phone")
 }
