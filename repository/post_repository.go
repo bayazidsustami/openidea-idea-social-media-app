@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"openidea-idea-social-media-app/customErr"
 	post_model "openidea-idea-social-media-app/models/post"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,14 +28,22 @@ func NewPostRepository(DBPool *pgxpool.Pool) PostRepository {
 func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post) error {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
-		return err
+		return customErr.ErrorInternalServer
 	}
 
 	SQL_INSERT := "INSERT INTO posts(post_html, tags, user_id) values ($1, $2, $3) RETURNING post_id"
 
-	_, err = conn.Exec(ctx, SQL_INSERT, post.PostHtml, post.Tags)
+	res, err := conn.Exec(ctx, SQL_INSERT, post.PostHtml, post.Tags)
 	if err != nil {
-		return err
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorBadRequest
 	}
 
 	return nil
@@ -43,7 +53,7 @@ func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_mode
 func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error) {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
-		return nil, err
+		return nil, customErr.ErrorInternalServer
 	}
 	defer conn.Release()
 
@@ -62,7 +72,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 
 	rows, err := conn.Query(ctx, SQL_GET)
 	if err != nil {
-		return nil, err
+		return nil, customErr.ErrorInternalServer
 	}
 	defer rows.Close()
 
@@ -86,7 +96,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 			&post.Comments,
 		)
 		if err != nil {
-			return nil, err
+			return nil, customErr.ErrorInternalServer
 		}
 
 		posts = append(posts, post)
