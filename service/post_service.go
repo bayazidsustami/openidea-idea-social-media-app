@@ -17,7 +17,6 @@ type PostService interface {
 }
 
 type PostServiceImpl struct {
-	AuthService    AuthService
 	PostRepository repository.PostRepository
 	Validator      *validator.Validate
 }
