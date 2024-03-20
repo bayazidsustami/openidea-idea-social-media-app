@@ -35,4 +35,5 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 	app.Use(security.GetJwtTokenHandler())
 
 	app.Post("v1/friend", friendController.AddFriend)
+	app.Delete("v1/friend", friendController.RemoveFriends)
 }
