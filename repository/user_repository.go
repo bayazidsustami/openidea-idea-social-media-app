@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 
@@ -12,6 +13,8 @@ import (
 type UserRepository interface {
 	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
 	Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error)
+	UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId int, email string) error
+	UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId int, phone string) error
 }
 
 type UserRepositoryImpl struct {
@@ -81,4 +84,128 @@ func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.C
 	}
 
 	return result, nil
+}
+
+func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId int, email string) error {
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+	defer tx.Rollback(ctx)
+
+	GET_EMAIL := "SELECT email FROM users u WHERE u.user_id = $1"
+
+	var resEmail sql.NullString
+	err = tx.QueryRow(ctx, GET_EMAIL, userId).Scan(&resEmail)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if resEmail.String != "" {
+		return customErr.ErrorBadRequest
+	}
+
+	GET_IS_EXISTED := "SELECT EXISTS (SELECT 1 FROM users WHERE email = $1)"
+	var isExistsEmail bool
+	err = tx.QueryRow(ctx, GET_IS_EXISTED, email).Scan(&isExistsEmail)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if isExistsEmail {
+		return customErr.ErrorConflict
+	}
+
+	UPDATE_EMAIL := `
+		UPDATE users
+		SET email = $1
+		WHERE user_id = $2
+		AND (email IS NULL OR email = '')
+	`
+	res, err := tx.Exec(ctx, UPDATE_EMAIL, email, userId)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorNotFound
+	}
+
+	tx.Commit(ctx)
+
+	return nil
+}
+
+func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId int, phone string) error {
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+	defer tx.Rollback(ctx)
+
+	GET_PHONE := "SELECT phone FROM users u WHERE u.user_id = $1"
+
+	var resPhone sql.NullString
+	err = tx.QueryRow(ctx, GET_PHONE, userId).Scan(&resPhone)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if resPhone.String != "" {
+		return customErr.ErrorBadRequest
+	}
+
+	GET_IS_EXISTED := "SELECT EXISTS (SELECT 1 FROM users WHERE phone = $1)"
+	var isExistsPhone bool
+	err = tx.QueryRow(ctx, GET_IS_EXISTED, phone).Scan(&isExistsPhone)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if isExistsPhone {
+		return customErr.ErrorConflict
+	}
+
+	UPDATE_EMAIL := `
+		UPDATE users
+		SET phone = $1
+		WHERE user_id = $2
+		AND (phone IS NULL OR phone = '')
+	`
+	res, err := tx.Exec(ctx, UPDATE_EMAIL, phone, userId)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorNotFound
+	}
+
+	tx.Commit(ctx)
+
+	return nil
 }

@@ -10,13 +10,16 @@ import (
 
 type UserController struct {
 	UserService service.UserService
+	AuthService service.AuthService
 }
 
 func New(
 	userService service.UserService,
+	authService service.AuthService,
 ) UserController {
 	return UserController{
 		UserService: userService,
+		AuthService: authService,
 	}
 }
 
@@ -50,4 +53,46 @@ func (controller *UserController) Login(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(response)
+}
+
+func (controller *UserController) UpdateEmail(ctx *fiber.Ctx) error {
+	emailReq := new(user_model.UpdateEmailRequest)
+
+	err := ctx.BodyParser(emailReq)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	userId, err := controller.AuthService.GetValidUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = controller.UserService.LinkEmail(ctx.UserContext(), userId, *emailReq)
+	if err != nil {
+		return err
+	}
+
+	return ctx.SendString("successfully linked email")
+}
+
+func (controller *UserController) UpdatePhone(ctx *fiber.Ctx) error {
+	phoneReq := new(user_model.UpdatePhoneRequest)
+
+	err := ctx.BodyParser(phoneReq)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	userId, err := controller.AuthService.GetValidUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = controller.UserService.LinkPhone(ctx.UserContext(), userId, *phoneReq)
+	if err != nil {
+		return err
+	}
+
+	return ctx.SendString("successfully linked phone")
 }
