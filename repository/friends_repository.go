@@ -28,7 +28,7 @@ func NewFriendRepository(
 }
 
 func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends friend_model.Friend) error {
-	SQL_ADD_FRIENDS := "INSERT INTO friends(user_id_requester, user_id_accepter) VALUES($1, $2) " +
+	SQL_ADD_FRIENDS := "INSERT INTO friends(user_id_requester, user_id_accepter) VALUES ($1, $2), ($2, $1) " +
 		"ON CONFLICT (user_id_requester, user_id_accepter) DO NOTHING"
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
