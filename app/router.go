@@ -23,11 +23,18 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 	userService := service.NewUserService(userRepository, validator, dbPool, authService)
 	userController := controller.New(userService)
 
-	api := app.Group("/v1")
-	api.Post("/user/register", userController.Register)
-	api.Post("/user/login", userController.Login)
+	friendRepository := repository.NewFriendRepository(dbPool)
+	friendService := service.NewFriendsService(validator, friendRepository)
+	friendController := controller.NewFriendsController(friendService, authService)
+
+	user := app.Group("/v1/user")
+	user.Post("/register", userController.Register)
+	user.Post("/login", userController.Login)
 
 	app.Use(security.CheckTokenHeaderExist)
 	app.Use(security.GetJwtTokenHandler())
 
+	app.Post("v1/friend", friendController.AddFriend)
+	app.Delete("v1/friend", friendController.RemoveFriends)
+	app.Get("/v1/friend", friendController.GetAllFriends)
 }
