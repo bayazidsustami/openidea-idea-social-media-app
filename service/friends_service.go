@@ -74,6 +74,14 @@ func (service *FriendsServiceImpl) GetAllFriends(ctx context.Context, userId int
 		return friend_model.FriendsPagingResponse{}, customErr.ErrorBadRequest
 	}
 
+	if filterRequest.SortBy == "" {
+		filterRequest.SortBy = "createdAt"
+	}
+
+	if filterRequest.OrderBy == "" {
+		filterRequest.OrderBy = "desc"
+	}
+
 	if filterRequest.Limit <= 5 {
 		filterRequest.Limit = 5
 	}
