@@ -1,6 +1,7 @@
 package friend_model
 
 import (
+	"database/sql"
 	"openidea-idea-social-media-app/models"
 	"time"
 )
@@ -13,7 +14,7 @@ type Friend struct {
 type FriendData struct {
 	UserId      int
 	Name        string
-	ImageUrl    string
+	ImageUrl    sql.NullString
 	FriendCount int
 	CreatedAt   *time.Time
 }

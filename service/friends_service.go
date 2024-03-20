@@ -100,7 +100,7 @@ func (service *FriendsServiceImpl) GetAllFriends(ctx context.Context, userId int
 		data := friend_model.FriendDataResponse{
 			UserId:      v.UserId,
 			Name:        v.Name,
-			ImageUrl:    v.ImageUrl,
+			ImageUrl:    v.ImageUrl.String,
 			FriendCount: v.FriendCount,
 			CreatedAt:   v.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
 		}

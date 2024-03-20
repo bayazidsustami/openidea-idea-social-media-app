@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 	"openidea-idea-social-media-app/customErr"
 	"openidea-idea-social-media-app/models"
 	friend_model "openidea-idea-social-media-app/models/friend"
@@ -90,6 +91,8 @@ func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId int,
 	defer conn.Release()
 
 	rows, err := conn.Query(ctx, query)
+	log.Println(query)
+	log.Println(err)
 	if err != nil {
 		return friend_model.FriendDataPaging{}, customErr.ErrorInternalServer
 	}
@@ -102,10 +105,12 @@ func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId int,
 			&friendData.UserId,
 			&friendData.Name,
 			&friendData.ImageUrl,
+			&friendData.FriendCount,
 			&friendData.CreatedAt,
 			&totalItem,
 		)
 		if err != nil {
+			log.Println(err)
 			return friend_model.FriendDataPaging{}, customErr.ErrorInternalServer
 		}
 		friendsData = append(friendsData, friendData)
