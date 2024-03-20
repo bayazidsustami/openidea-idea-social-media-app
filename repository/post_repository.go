@@ -10,7 +10,7 @@ import (
 
 type PostRepository interface {
 	Create(ctx context.Context, post post_model.Post) error
-	GetAll(ctx context.Context) ([]post_model.Post, error)
+	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error)
 }
 
 type PostRepositoryImpl struct {
@@ -39,7 +39,8 @@ func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_mode
 	return nil
 }
 
-func (repository *PostRepositoryImpl) GetAll(ctx context.Context) ([]post_model.Post, error) {
+// TODO: Populate filters to query
+func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error) {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
 		return nil, err
