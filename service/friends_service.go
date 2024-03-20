@@ -11,6 +11,7 @@ import (
 
 type FriendsService interface {
 	AddFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error
+	RemoveFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error
 }
 
 type FriendsServiceImpl struct {
@@ -40,6 +41,25 @@ func (service *FriendsServiceImpl) AddFriends(ctx context.Context, userId int, r
 	}
 
 	err = service.FriendsRepository.Create(ctx, userFriend)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (service *FriendsServiceImpl) RemoveFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error {
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	userFriend := friend_model.Friend{
+		UserIdRequester: userId,
+		UserIdAccepter:  request.UserId,
+	}
+
+	err = service.FriendsRepository.Delete(ctx, userFriend)
 	if err != nil {
 		return err
 	}
