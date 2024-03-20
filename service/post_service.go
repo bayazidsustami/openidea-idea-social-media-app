@@ -17,8 +17,18 @@ type PostService interface {
 }
 
 type PostServiceImpl struct {
-	PostRepository repository.PostRepository
 	Validator      *validator.Validate
+	PostRepository repository.PostRepository
+}
+
+func NewPostService(
+	validator *validator.Validate,
+	postRepository repository.PostRepository,
+) PostService {
+	return &PostServiceImpl{
+		Validator:      validator,
+		PostRepository: postRepository,
+	}
 }
 
 func (service *PostServiceImpl) Create(ctx context.Context, userId int, request post_model.PostCreateRequest) error {
