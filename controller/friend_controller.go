@@ -64,3 +64,24 @@ func (controller *FriendController) RemoveFriends(ctx *fiber.Ctx) error {
 
 	return ctx.SendString("successfully delete friend")
 }
+
+func (controller *FriendController) GetAllFriends(ctx *fiber.Ctx) error {
+	filterRequest := new(friend_model.FilterFriends)
+
+	err := ctx.QueryParser(filterRequest)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	userId, err := controller.AuthService.GetValidUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	response, err := controller.FriendService.GetAllFriends(ctx.UserContext(), userId, *filterRequest)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(response)
+}

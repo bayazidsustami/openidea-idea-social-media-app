@@ -36,4 +36,5 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 
 	app.Post("v1/friend", friendController.AddFriend)
 	app.Delete("v1/friend", friendController.RemoveFriends)
+	app.Get("/v1/friend", friendController.GetAllFriends)
 }

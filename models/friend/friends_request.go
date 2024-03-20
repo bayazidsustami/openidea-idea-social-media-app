@@ -13,7 +13,7 @@ type FriendRequest struct {
 type FilterFriends struct {
 	SortBy   string `json:"sortBy" validate:"oneof=friendCount createdAt"`
 	OrderBy  string `json:"orderBy" validate:"oneof=asc dsc ''"`
-	UserOnly bool   `json:"userOnly" validate:"boolean ''"`
+	UserOnly bool   `json:"userOnly" validate:"boolean"`
 	Limit    int    `json:"limit"`
 	Offset   int    `json:"offset"`
 	Search   string `json:"search"`
