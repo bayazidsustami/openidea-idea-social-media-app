@@ -10,6 +10,8 @@ import (
 func RegisterValidation(validator *validator.Validate) {
 	validator.RegisterStructValidation(mustValidRegisterRequest, user_model.UserRegisterRequest{})
 	validator.RegisterStructValidation(mustValidLoginRequest, user_model.UserLoginRequest{})
+	validator.RegisterStructValidation(mustValidEmailRequest, user_model.UpdateEmailRequest{})
+	validator.RegisterStructValidation(mustValidPhoneRequest, user_model.UpdatePhoneRequest{})
 }
 
 func mustValidRegisterRequest(sl validator.StructLevel) {
@@ -47,6 +49,22 @@ func mustValidLoginRequest(sl validator.StructLevel) {
 		sl.ReportError(registerRequest.CredentialType, "CredentialType", "CredentialType", "credentialType", "")
 	}
 
+}
+
+func mustValidEmailRequest(sl validator.StructLevel) {
+	emailReq := sl.Current().Interface().(user_model.UpdateEmailRequest)
+
+	if !isValidEmail(emailReq.Email) {
+		sl.ReportError(emailReq.Email, "Email", "Email", "email", "")
+	}
+}
+
+func mustValidPhoneRequest(sl validator.StructLevel) {
+	phoneReq := sl.Current().Interface().(user_model.UpdatePhoneRequest)
+
+	if !isValidPhone(phoneReq.Phone) {
+		sl.ReportError(phoneReq.Phone, "Phone", "Phone", "phone", "")
+	}
 }
 
 func isValidEmail(email string) bool {
