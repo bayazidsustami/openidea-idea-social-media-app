@@ -2,16 +2,21 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"log"
 	"openidea-idea-social-media-app/customErr"
 	user_model "openidea-idea-social-media-app/models/user"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepository interface {
 	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
 	Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error)
+	UpdateEmail(ctx context.Context, conn *pgxpool.Pool, userId int, email string) error
+	UpdatePhone(ctx context.Context, conn *pgxpool.Pool, userId int, phone string) error
 }
 
 type UserRepositoryImpl struct {
@@ -81,4 +86,36 @@ func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.C
 	}
 
 	return result, nil
+}
+
+func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgxpool.Pool, userId int, email string) error {
+	UPDATE_EMAIL := `
+		UPDATE users
+		SET email = CASE 
+				WHEN email IS NULL OR email = '' THEN $1
+				ELSE email
+				END
+		WHERE user_id = $2
+		AND (email IS NULL OR email = '')
+		ON CONFLICT (email) DO NOTHING;
+	`
+	res, err := conn.Exec(ctx, UPDATE_EMAIL, email, userId)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			log.Println(pgErr.Code)
+			log.Println(pgErr.Message)
+		}
+		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorNotFound
+	}
+
+	return nil
+}
+
+func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Pool, userId int, phone string) error {
+	return nil
 }
