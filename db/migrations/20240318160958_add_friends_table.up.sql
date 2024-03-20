@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS friends (
 	user_id_accepter INTEGER NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id_requester) REFERENCES users (user_id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id_accepter) REFERENCES users (user_id) ON DELETE CASCADE
+  FOREIGN KEY (user_id_accepter) REFERENCES users (user_id) ON DELETE CASCADE,
+  CONSTRAINT unique_friends_combination UNIQUE (user_id_requester, user_id_accepter)
 );
-
-CREATE UNIQUE INDEX unique_requester_accepter_index ON friends (user_id_requester, user_id_accepter)
