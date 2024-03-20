@@ -117,5 +117,29 @@ func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgx
 }
 
 func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId int, phone string) error {
+	UPDATE_PHONE := `
+		UPDATE users
+		SET phone = CASE 
+				WHEN phone IS NULL OR phone = '' THEN $1
+				ELSE phone
+				END
+		WHERE user_id = $2
+		AND (phone IS NULL OR phone = '')
+		ON CONFLICT (phone) DO NOTHING;
+	`
+	res, err := conn.Exec(ctx, UPDATE_PHONE, phone, userId)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			log.Println(pgErr.Code)
+			log.Println(pgErr.Message)
+		}
+		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorNotFound
+	}
+
 	return nil
 }
