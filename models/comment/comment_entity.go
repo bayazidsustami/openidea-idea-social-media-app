@@ -1,4 +1,4 @@
-package comment_entity
+package comment_model
 
 import user_model "openidea-idea-social-media-app/models/user"
 

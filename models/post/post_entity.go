@@ -1,7 +1,7 @@
-package post_entity
+package post_model
 
 import (
-	comment_entity "openidea-idea-social-media-app/models/comment"
+	comment_model "openidea-idea-social-media-app/models/comment"
 	user_model "openidea-idea-social-media-app/models/user"
 	"time"
 )
@@ -10,7 +10,7 @@ type Post struct {
 	PostId    int
 	PostHtml  string
 	Tags      []string
-	Comment   []comment_entity.Comment
+	Comments  []comment_model.Comment
 	Creator   user_model.Creator
 	CreatedAt time.Time
 }
