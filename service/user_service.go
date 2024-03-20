@@ -15,6 +15,8 @@ import (
 type UserService interface {
 	Register(ctx context.Context, request user_model.UserRegisterRequest) (user_model.UserRegisterResponse[user_model.UserData], error)
 	Login(ctx context.Context, request user_model.UserLoginRequest) (user_model.UserLoginResponse, error)
+	LinkEmail(ctx context.Context, userId int, email string) error
+	LinkPhone(ctx context.Context, userId int, phone string) error
 }
 
 type UserServiceImpl struct {
@@ -158,4 +160,32 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 	}
 
 	return userResponse, nil
+}
+
+func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId int, email string) error {
+	conn, err := service.DBPool.Acquire(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+	defer conn.Release()
+	err = service.UserRepository.UpdateEmail(ctx, conn, userId, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId int, phone string) error {
+	conn, err := service.DBPool.Acquire(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+	defer conn.Release()
+	err = service.UserRepository.UpdatePhone(ctx, conn, userId, phone)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
