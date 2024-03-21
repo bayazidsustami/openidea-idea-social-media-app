@@ -73,7 +73,7 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 					Name:        comment.Creator.Name,
 					ImageUrl:    comment.Creator.ImageUrl.String,
 					FriendCount: comment.Creator.FriendCount,
-					CreatedAt:   comment.Creator.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
+					CreatedAt:   comment.Creator.CreatedAt,
 				},
 			})
 

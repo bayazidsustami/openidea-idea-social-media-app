@@ -62,7 +62,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 		"jsonb_agg(jsonb_build_object(" +
 		"'comment', c.comment," +
 		"'createdAt', c.created_at," +
-		"'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', cu.image_url, 'createdAt', cu.created_at)" +
+		`'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', cu.image_url, 'createdAt', to_char(cu.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'))` +
 		")) AS comments " +
 		"FROM posts p " +
 		"JOIN users u ON p.user_id = u.user_id " +
@@ -71,6 +71,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 		"GROUP BY p.post_id, u.user_id"
 
 	rows, err := conn.Query(ctx, SQL_GET)
+
 	if err != nil {
 		return nil, customErr.ErrorInternalServer
 	}
@@ -91,6 +92,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 			&post.Creator.CreatedAt,
 			&post.Comments,
 		)
+
 		if err != nil {
 			return nil, customErr.ErrorInternalServer
 		}
