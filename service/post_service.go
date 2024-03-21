@@ -71,7 +71,7 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 				Creator: post_model.CreatorResponse{
 					UserId:      comment.Creator.UserId,
 					Name:        comment.Creator.Name,
-					ImageUrl:    comment.Creator.ImageUrl,
+					ImageUrl:    comment.Creator.ImageUrl.String,
 					FriendCount: comment.Creator.FriendCount,
 					CreatedAt:   comment.Creator.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
 				},
@@ -90,7 +90,7 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 			Creator: post_model.CreatorResponse{
 				UserId:      post.Creator.UserId,
 				Name:        post.Creator.Name,
-				ImageUrl:    post.Creator.ImageUrl,
+				ImageUrl:    post.Creator.ImageUrl.String,
 				FriendCount: post.Creator.FriendCount,
 				CreatedAt:   post.Creator.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
 			},
