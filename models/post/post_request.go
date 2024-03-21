@@ -3,8 +3,8 @@ package post_model
 type PostFilters struct {
 	Limit     int    `json:"limit" validate:"number"`
 	Offset    int    `json:"offset" validate:"number"`
-	Search    string `json:"search" validate:"string"`
-	SearchTag string `json:"searchTag" validate:"dive,string"`
+	Search    string `json:"search"`
+	SearchTag string `json:"searchTag" validate:"dive"`
 }
 
 type PostCreateRequest struct {
