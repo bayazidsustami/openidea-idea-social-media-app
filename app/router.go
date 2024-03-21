@@ -35,6 +35,9 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 	commentService := service.NewCommentService(validator, commentRepository)
 	commentController := controller.NewCommentController(commentService, authService)
 
+	imageService := service.NewImageService(security.GetAws3Session())
+	imageController := controller.NewImageUploadController(authService, imageService)
+
 	user := app.Group("/v1/user")
 	user.Post("/register", userController.Register)
 	user.Post("/login", userController.Login)
@@ -53,4 +56,6 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 	app.Get("/v1/post", postController.GetAll)
 
 	app.Post("/v1/post/comment", commentController.Create)
+
+	app.Post("/v1/image", imageController.UploadImage)
 }

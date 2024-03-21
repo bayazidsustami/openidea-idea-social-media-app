@@ -17,6 +17,7 @@ var (
 	applicationDbPassword = viper.GetString("DB_PASSWORD")
 	applicationDbHost     = viper.GetString("DB_HOST")
 	applicationDbPort     = viper.GetString("DB_PORT")
+	applicationDbParams   = viper.GetString("DB_PARAMS")
 	maxTimeout            = 20 * time.Second
 	maxConnLifeTime       = 60 * time.Minute
 	maxConnIdleTime       = 5 * time.Minute
@@ -28,7 +29,14 @@ var (
 
 func GetConnectionPool() *pgxpool.Pool {
 	once.Do(func() {
-		dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", applicationDbUsername, applicationDbPassword, applicationDbHost, applicationDbPort, applicationDbName)
+		dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?%s",
+			applicationDbUsername,
+			applicationDbPassword,
+			applicationDbHost,
+			applicationDbPort,
+			applicationDbName,
+			applicationDbParams,
+		)
 		config, err := pgxpool.ParseConfig(dbUrl)
 		if err != nil {
 			log.Fatal(err)

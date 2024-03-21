@@ -15,6 +15,7 @@ func envBinder() {
 	viper.BindEnv("DB_PASSWORD")
 	viper.BindEnv("DB_HOST")
 	viper.BindEnv("DB_PORT")
+	viper.BindEnv("DB_PARAMS")
 
 	/**
 	 * Env variables related to AWS S3
