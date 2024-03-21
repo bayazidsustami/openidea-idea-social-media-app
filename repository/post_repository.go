@@ -62,7 +62,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 		"(SELECT COUNT(*) FROM friends f WHERE p.user_id = f.user_id_requester), " +
 		"jsonb_agg(jsonb_build_object(" +
 		"'comment', c.comment," +
-		"'createdAt', c.created_at," +
+		`'createdAt', to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'),` +
 		`'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', cu.image_url, 'friendCount', (SELECT COUNT(*) FROM friends cf WHERE cu.user_id = cf.user_id_requester), 'createdAt', to_char(cu.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'))` +
 		")) AS comments " +
 		"FROM posts p " +

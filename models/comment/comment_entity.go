@@ -18,4 +18,5 @@ type Comment struct {
 	UserId    int
 	Comment   string
 	Creator   CommentCreator
+	CreatedAt string
 }

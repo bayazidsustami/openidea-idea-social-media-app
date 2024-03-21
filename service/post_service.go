@@ -67,7 +67,8 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 		var comments []post_model.CommentResponse
 		for _, comment := range post.Comments {
 			comments = append(comments, post_model.CommentResponse{
-				Comment: comment.Comment,
+				Comment:   comment.Comment,
+				CreatedAt: comment.CreatedAt,
 				Creator: post_model.CreatorResponse{
 					UserId:      comment.Creator.UserId,
 					Name:        comment.Creator.Name,
