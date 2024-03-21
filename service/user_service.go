@@ -17,6 +17,7 @@ type UserService interface {
 	Login(ctx context.Context, request user_model.UserLoginRequest) (user_model.UserLoginResponse, error)
 	LinkEmail(ctx context.Context, userId int, emailReq user_model.UpdateEmailRequest) error
 	LinkPhone(ctx context.Context, userId int, phoneReq user_model.UpdatePhoneRequest) error
+	UpdateAccount(ctx context.Context, userId int, request user_model.UpdateAccountRequest) error
 }
 
 type UserServiceImpl struct {
@@ -193,6 +194,32 @@ func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId int, phone
 	}
 	defer conn.Release()
 	err = service.UserRepository.UpdatePhone(ctx, conn, userId, phoneReq.Phone)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (service *UserServiceImpl) UpdateAccount(ctx context.Context, userId int, request user_model.UpdateAccountRequest) error {
+	err := service.Validator.Struct(request)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	conn, err := service.DBPool.Acquire(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+	defer conn.Release()
+
+	user := user_model.User{
+		UserId:   userId,
+		Name:     request.Name,
+		ImageUrl: request.ImageUrl,
+	}
+
+	err = service.UserRepository.Update(ctx, conn, user)
 	if err != nil {
 		return err
 	}
