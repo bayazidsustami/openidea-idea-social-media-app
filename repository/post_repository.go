@@ -59,10 +59,11 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 
 	SQL_GET := "SELECT p.post_id, p.post_html, p.tags, p.created_at, " +
 		"u.user_id, u.name, u.image_url, u.created_at, " +
+		"(SELECT COUNT(*) FROM friends f WHERE p.user_id = f.user_id_requester), " +
 		"jsonb_agg(jsonb_build_object(" +
 		"'comment', c.comment," +
 		"'createdAt', c.created_at," +
-		`'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', cu.image_url, 'createdAt', to_char(cu.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'))` +
+		`'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', cu.image_url, 'friendCount', (SELECT COUNT(*) FROM friends cf WHERE cu.user_id = cf.user_id_requester), 'createdAt', to_char(cu.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'))` +
 		")) AS comments " +
 		"FROM posts p " +
 		"JOIN users u ON p.user_id = u.user_id " +
@@ -71,7 +72,6 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 		"GROUP BY p.post_id, u.user_id"
 
 	rows, err := conn.Query(ctx, SQL_GET)
-
 	if err != nil {
 		return nil, customErr.ErrorInternalServer
 	}
@@ -90,6 +90,7 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 			&post.Creator.Name,
 			&post.Creator.ImageUrl,
 			&post.Creator.CreatedAt,
+			&post.Creator.FriendCount,
 			&post.Comments,
 		)
 
