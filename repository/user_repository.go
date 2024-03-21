@@ -15,6 +15,7 @@ type UserRepository interface {
 	Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error)
 	UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId int, email string) error
 	UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId int, phone string) error
+	Update(ctx context.Context, conn *pgxpool.Conn, user user_model.User) error
 }
 
 type UserRepositoryImpl struct {
@@ -206,6 +207,27 @@ func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgx
 	}
 
 	tx.Commit(ctx)
+
+	return nil
+}
+
+func (repository *UserRepositoryImpl) Update(ctx context.Context, conn *pgxpool.Conn, user user_model.User) error {
+	UPDATE_ACC := "UPDATE users u " +
+		"SET u.name = $1, $u.image_url = $2, u.updated_at = CURRENT_TIMESTAMP " +
+		"WHERE u.user_id = $3"
+
+	res, err := conn.Exec(ctx, UPDATE_ACC, user.Name, user.ImageUrl, user.UserId)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if res.RowsAffected() == 0 {
+		return customErr.ErrorNotFound
+	}
 
 	return nil
 }
