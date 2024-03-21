@@ -20,3 +20,8 @@ type UpdateEmailRequest struct {
 type UpdatePhoneRequest struct {
 	Phone string `json:"phone"`
 }
+
+type UpdateAccountRequest struct {
+	Name     string `json:"name" validate:"required,min=5,max=50"`
+	ImageUrl string `json:"imageUrl" validate:"required,imageurl"`
+}

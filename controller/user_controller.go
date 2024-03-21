@@ -96,3 +96,24 @@ func (controller *UserController) UpdatePhone(ctx *fiber.Ctx) error {
 
 	return ctx.SendString("successfully linked phone")
 }
+
+func (controller *UserController) UpdateAccount(ctx *fiber.Ctx) error {
+	updateAccReq := new(user_model.UpdateAccountRequest)
+
+	err := ctx.BodyParser(updateAccReq)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
+	userId, err := controller.AuthService.GetValidUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = controller.UserService.UpdateAccount(ctx.UserContext(), userId, *updateAccReq)
+	if err != nil {
+		return err
+	}
+
+	return ctx.SendString("successfully update profile")
+}

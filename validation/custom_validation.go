@@ -1,8 +1,10 @@
 package validation
 
 import (
+	"net/url"
 	user_model "openidea-idea-social-media-app/models/user"
 	"regexp"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -12,6 +14,7 @@ func RegisterValidation(validator *validator.Validate) {
 	validator.RegisterStructValidation(mustValidLoginRequest, user_model.UserLoginRequest{})
 	validator.RegisterStructValidation(mustValidEmailRequest, user_model.UpdateEmailRequest{})
 	validator.RegisterStructValidation(mustValidPhoneRequest, user_model.UpdatePhoneRequest{})
+	validator.RegisterValidation("imageurl", mustValidImageUrl)
 }
 
 func mustValidRegisterRequest(sl validator.StructLevel) {
@@ -85,4 +88,25 @@ func isValidPhone(phoneNumber string) bool {
 	// $               - End of string
 	re := regexp.MustCompile(`^\+(?:[0-9] ?){6,12}[0-9]$`)
 	return re.MatchString(phoneNumber) && (len(phoneNumber) >= 7 && len(phoneNumber) <= 13)
+}
+
+func mustValidImageUrl(fl validator.FieldLevel) bool {
+	urlString := fl.Field().String()
+
+	// Parse the URL
+	u, err := url.Parse(urlString)
+	if err != nil {
+		return false
+	}
+
+	// Get the file extension
+	parts := strings.Split(u.Path, ".")
+	extension := parts[len(parts)-1]
+
+	// Check if the extension is jpg or jpeg
+	if extension != "jpg" && extension != "jpeg" {
+		return false
+	}
+
+	return true
 }
