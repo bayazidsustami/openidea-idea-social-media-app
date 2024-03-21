@@ -212,9 +212,9 @@ func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgx
 }
 
 func (repository *UserRepositoryImpl) Update(ctx context.Context, conn *pgxpool.Conn, user user_model.User) error {
-	UPDATE_ACC := "UPDATE users u " +
-		"SET u.name = $1, $u.image_url = $2, u.updated_at = CURRENT_TIMESTAMP " +
-		"WHERE u.user_id = $3"
+	UPDATE_ACC := "UPDATE users " +
+		"SET name = $1, image_url = $2, updated_at = CURRENT_TIMESTAMP " +
+		"WHERE user_id = $3"
 
 	res, err := conn.Exec(ctx, UPDATE_ACC, user.Name, user.ImageUrl, user.UserId)
 	if err != nil {
