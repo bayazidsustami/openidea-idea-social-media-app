@@ -13,7 +13,7 @@ import (
 
 type PostService interface {
 	Create(ctx context.Context, userId int, request post_model.PostCreateRequest) error
-	GetAll(ctx context.Context, userId int, filters post_model.PostFilters) (post_model.PostGetAllResponse, error)
+	GetAll(ctx context.Context, filters post_model.PostFilters) (post_model.PostGetAllResponse, error)
 }
 
 type PostServiceImpl struct {
@@ -50,14 +50,13 @@ func (service *PostServiceImpl) Create(ctx context.Context, userId int, request 
 	return nil
 }
 
-// TODO: Populate userId
-func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters post_model.PostFilters) (post_model.PostGetAllResponse, error) {
+func (service *PostServiceImpl) GetAll(ctx context.Context, filters post_model.PostFilters) (post_model.PostGetAllResponse, error) {
 	err := service.Validator.Struct(filters)
 	if err != nil {
 		return post_model.PostGetAllResponse{}, customErr.ErrorBadRequest
 	}
 
-	posts, err := service.PostRepository.GetAll(ctx, filters)
+	posts, totalPosts, err := service.PostRepository.GetAll(ctx, filters)
 	if err != nil {
 		return post_model.PostGetAllResponse{}, err
 	}
@@ -67,13 +66,14 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 		var comments []post_model.CommentResponse
 		for _, comment := range post.Comments {
 			comments = append(comments, post_model.CommentResponse{
-				Comment: comment.Comment,
+				Comment:   comment.Comment,
+				CreatedAt: comment.CreatedAt,
 				Creator: post_model.CreatorResponse{
 					UserId:      comment.Creator.UserId,
 					Name:        comment.Creator.Name,
-					ImageUrl:    comment.Creator.ImageUrl,
+					ImageUrl:    comment.Creator.ImageUrl.String,
 					FriendCount: comment.Creator.FriendCount,
-					CreatedAt:   comment.Creator.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
+					CreatedAt:   comment.Creator.CreatedAt,
 				},
 			})
 
@@ -90,7 +90,7 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 			Creator: post_model.CreatorResponse{
 				UserId:      post.Creator.UserId,
 				Name:        post.Creator.Name,
-				ImageUrl:    post.Creator.ImageUrl,
+				ImageUrl:    post.Creator.ImageUrl.String,
 				FriendCount: post.Creator.FriendCount,
 				CreatedAt:   post.Creator.CreatedAt.Format("2006-01-02T15:04:05-07:00"),
 			},
@@ -102,8 +102,11 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 	response := post_model.PostGetAllResponse{
 		Message: "Success",
 		Data:    data,
-		// TODO: Populate this with actual value
-		Meta: common_model.MetaPageResponse{},
+		Meta: common_model.MetaPageResponse{
+			Limit:  filters.Limit,
+			Offset: filters.Offset,
+			Total:  totalPosts,
+		},
 	}
 
 	return response, nil

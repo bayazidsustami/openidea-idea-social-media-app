@@ -1,11 +1,14 @@
 package user_model
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Creator struct {
 	UserId      int
 	Name        string
-	ImageUrl    string
+	ImageUrl    sql.NullString
 	FriendCount int
 	CreatedAt   time.Time
 }

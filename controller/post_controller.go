@@ -52,12 +52,12 @@ func (controller *PostController) GetAll(ctx *fiber.Ctx) error {
 		return customErr.ErrorBadRequest
 	}
 
-	userId, err := controller.AuthService.GetValidUser(ctx)
+	_, err = controller.AuthService.GetValidUser(ctx)
 	if err != nil {
 		return err
 	}
 
-	response, err := controller.PostService.GetAll(ctx.UserContext(), userId, *filterRequest)
+	response, err := controller.PostService.GetAll(ctx.UserContext(), *filterRequest)
 	if err != nil {
 		return err
 	}

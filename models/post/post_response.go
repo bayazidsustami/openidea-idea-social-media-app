@@ -19,8 +19,9 @@ type PostResponse struct {
 }
 
 type CommentResponse struct {
-	Comment string          `json:"comment"`
-	Creator CreatorResponse `json:"creator"`
+	Comment   string          `json:"comment"`
+	Creator   CreatorResponse `json:"creator"`
+	CreatedAt string          `json:"createdAt"`
 }
 
 type PostDataResponse struct {

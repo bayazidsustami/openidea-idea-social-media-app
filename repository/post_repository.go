@@ -12,7 +12,7 @@ import (
 
 type PostRepository interface {
 	Create(ctx context.Context, post post_model.Post, userId int) error
-	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error)
+	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error)
 }
 
 type PostRepositoryImpl struct {
@@ -49,38 +49,24 @@ func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_mode
 	return nil
 }
 
-// TODO: Populate filters to query
-func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error) {
+func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error) {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
-		return nil, customErr.ErrorInternalServer
+		return nil, 0, customErr.ErrorInternalServer
 	}
 	defer conn.Release()
 
-	SQL_GET := "SELECT p.post_id, p.post_html, p.tags, p.created_at, " +
-		"u.user_id, u.name, u.image_url, u.created_at, " +
-		"jsonb_agg(jsonb_build_object(" +
-		"'comment', c.comment," +
-		"'createdAt', c.created_at" +
-		// TODO: Adjust this
-		// "'creator', SELECT jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', cu.image_url, 'createdAt', cu.created_at) AS 'creator'" +
-		")) AS 'comments' " +
-		"FROM posts p " +
-		"LEFT JOIN users u ON p.user_id = u.user_id " +
-		"LEFT JOIN comments c ON p.post_id = c.post_id " +
-		"GROUP BY p.post_id"
+	query := filters.BuildQuery()
 
-	rows, err := conn.Query(ctx, SQL_GET)
+	rows, err := conn.Query(ctx, query)
 	if err != nil {
-		return nil, customErr.ErrorInternalServer
+		return nil, 0, customErr.ErrorInternalServer
 	}
 	defer rows.Close()
 
-	if !rows.Next() {
-		return nil, fiber.NewError(fiber.StatusNotFound, "Not Found")
-	}
-
 	var posts []post_model.Post
+	var totalPosts int
+
 	for rows.Next() {
 		post := post_model.Post{}
 
@@ -93,14 +79,21 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 			&post.Creator.Name,
 			&post.Creator.ImageUrl,
 			&post.Creator.CreatedAt,
+			&post.Creator.FriendCount,
 			&post.Comments,
+			&totalPosts,
 		)
+
 		if err != nil {
-			return nil, customErr.ErrorInternalServer
+			return nil, 0, customErr.ErrorInternalServer
 		}
 
 		posts = append(posts, post)
 	}
 
-	return posts, nil
+	if len(posts) == 0 {
+		return nil, 0, fiber.NewError(fiber.StatusNotFound, "Not Found")
+	}
+
+	return posts, totalPosts, nil
 }

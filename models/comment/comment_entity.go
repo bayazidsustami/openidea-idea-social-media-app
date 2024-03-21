@@ -1,11 +1,22 @@
 package comment_model
 
-import user_model "openidea-idea-social-media-app/models/user"
+import (
+	"database/sql"
+)
+
+type CommentCreator struct {
+	UserId      int
+	Name        string
+	ImageUrl    sql.NullString
+	FriendCount int
+	CreatedAt   string
+}
 
 type Comment struct {
 	CommentId int
 	PostId    int
 	UserId    int
 	Comment   string
-	Creator   user_model.Creator
+	Creator   CommentCreator
+	CreatedAt string
 }
