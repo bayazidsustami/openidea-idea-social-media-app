@@ -12,7 +12,7 @@ import (
 
 type PostRepository interface {
 	Create(ctx context.Context, post post_model.Post, userId int) error
-	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error)
+	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error)
 }
 
 type PostRepositoryImpl struct {
@@ -49,11 +49,10 @@ func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_mode
 	return nil
 }
 
-// TODO: Populate filters to query
-func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error) {
+func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error) {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
-		return nil, customErr.ErrorInternalServer
+		return nil, 0, customErr.ErrorInternalServer
 	}
 	defer conn.Release()
 
@@ -61,11 +60,13 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 
 	rows, err := conn.Query(ctx, query)
 	if err != nil {
-		return nil, customErr.ErrorInternalServer
+		return nil, 0, customErr.ErrorInternalServer
 	}
 	defer rows.Close()
 
 	var posts []post_model.Post
+	var totalPosts int
+
 	for rows.Next() {
 		post := post_model.Post{}
 
@@ -80,18 +81,19 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 			&post.Creator.CreatedAt,
 			&post.Creator.FriendCount,
 			&post.Comments,
+			&totalPosts,
 		)
 
 		if err != nil {
-			return nil, customErr.ErrorInternalServer
+			return nil, 0, customErr.ErrorInternalServer
 		}
 
 		posts = append(posts, post)
 	}
 
 	if len(posts) == 0 {
-		return nil, fiber.NewError(fiber.StatusNotFound, "Not Found")
+		return nil, 0, fiber.NewError(fiber.StatusNotFound, "Not Found")
 	}
 
-	return posts, nil
+	return posts, totalPosts, nil
 }

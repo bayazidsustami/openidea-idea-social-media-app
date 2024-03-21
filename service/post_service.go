@@ -13,7 +13,7 @@ import (
 
 type PostService interface {
 	Create(ctx context.Context, userId int, request post_model.PostCreateRequest) error
-	GetAll(ctx context.Context, userId int, filters post_model.PostFilters) (post_model.PostGetAllResponse, error)
+	GetAll(ctx context.Context, filters post_model.PostFilters) (post_model.PostGetAllResponse, error)
 }
 
 type PostServiceImpl struct {
@@ -50,14 +50,13 @@ func (service *PostServiceImpl) Create(ctx context.Context, userId int, request 
 	return nil
 }
 
-// TODO: Populate userId
-func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters post_model.PostFilters) (post_model.PostGetAllResponse, error) {
+func (service *PostServiceImpl) GetAll(ctx context.Context, filters post_model.PostFilters) (post_model.PostGetAllResponse, error) {
 	err := service.Validator.Struct(filters)
 	if err != nil {
 		return post_model.PostGetAllResponse{}, customErr.ErrorBadRequest
 	}
 
-	posts, err := service.PostRepository.GetAll(ctx, filters)
+	posts, totalPosts, err := service.PostRepository.GetAll(ctx, filters)
 	if err != nil {
 		return post_model.PostGetAllResponse{}, err
 	}
@@ -103,8 +102,11 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, userId int, filters 
 	response := post_model.PostGetAllResponse{
 		Message: "Success",
 		Data:    data,
-		// TODO: Populate this with actual value
-		Meta: common_model.MetaPageResponse{},
+		Meta: common_model.MetaPageResponse{
+			Limit:  filters.Limit,
+			Offset: filters.Offset,
+			Total:  totalPosts,
+		},
 	}
 
 	return response, nil
