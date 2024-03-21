@@ -13,14 +13,14 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
-func StartFiberApp() {
+func StartFiberApp(port string, prefork bool) {
 	app := fiber.New(fiber.Config{
 		JSONEncoder:  json.Marshal,
 		JSONDecoder:  json.Unmarshal,
 		IdleTimeout:  config.IdleTimeout,
 		WriteTimeout: config.WriteTimeout,
 		ReadTimeout:  config.ReadTimeout,
-		Prefork:      true,
+		Prefork:      prefork,
 	})
 
 	prometheus := fiberprometheus.New("social-app-service")
@@ -39,6 +39,6 @@ func StartFiberApp() {
 
 	app.Use(customErr.NotFoundHandler)
 
-	err := app.Listen("localhost:8000")
+	err := app.Listen(":" + port)
 	log.Fatal(err)
 }
