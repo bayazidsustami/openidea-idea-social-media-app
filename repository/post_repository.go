@@ -11,7 +11,7 @@ import (
 )
 
 type PostRepository interface {
-	Create(ctx context.Context, post post_model.Post) error
+	Create(ctx context.Context, post post_model.Post, userId int) error
 	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, error)
 }
 
@@ -25,15 +25,15 @@ func NewPostRepository(DBPool *pgxpool.Pool) PostRepository {
 	}
 }
 
-func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post) error {
+func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post, userId int) error {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
 	}
 
-	SQL_INSERT := "INSERT INTO posts(post_html, tags, user_id) values ($1, $2, $3) RETURNING post_id"
+	SQL_INSERT := "INSERT INTO posts(post_html, tags, user_id) values ($1, $2, $3)"
 
-	res, err := conn.Exec(ctx, SQL_INSERT, post.PostHtml, post.Tags)
+	res, err := conn.Exec(ctx, SQL_INSERT, post.PostHtml, post.Tags, userId)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest

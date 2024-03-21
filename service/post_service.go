@@ -42,7 +42,7 @@ func (service *PostServiceImpl) Create(ctx context.Context, userId int, request 
 		Tags:     request.Tags,
 	}
 
-	err = service.PostRepository.Create(ctx, post)
+	err = service.PostRepository.Create(ctx, post, userId)
 	if err != nil {
 		return err
 	}
