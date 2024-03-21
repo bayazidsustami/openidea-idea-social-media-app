@@ -10,7 +10,7 @@ import (
 
 func GetAws3Session() *s3.S3 {
 	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String("S3_REGION"),
+		Region: aws.String(viper.GetString("S3_REGION")),
 		Credentials: credentials.NewStaticCredentials(
 			viper.GetString("S3_ID"),
 			viper.GetString("S3_SECRET_KEY"),
