@@ -59,7 +59,7 @@ func (ff *FilterFriends) BuildQuery(userId int) string {
 	// Add limit and offset
 	if ff.Limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", ff.Limit)
-		query += fmt.Sprintf(" OFFSET %d", ff.Offset)
+		query += fmt.Sprintf(" OFFSET %d", ff.Offset*ff.Limit)
 	}
 	return query
 }
