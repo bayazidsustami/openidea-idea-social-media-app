@@ -45,7 +45,7 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 	app.Use(security.CheckTokenHeaderExist)
 	app.Use(security.GetJwtTokenHandler())
 
-	app.Post("/v1/user/link/email", userController.UpdateEmail)
+	app.Post("/v1/user/link", userController.UpdateEmail)
 	app.Post("/v1/user/link/phone", userController.UpdatePhone)
 	app.Patch("/v1/user", userController.UpdateAccount)
 

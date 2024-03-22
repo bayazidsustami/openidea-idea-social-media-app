@@ -14,11 +14,11 @@ type UserLoginRequest struct {
 }
 
 type UpdateEmailRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email" validate:"required"`
 }
 
 type UpdatePhoneRequest struct {
-	Phone string `json:"phone"`
+	Phone string `json:"phone" validate:"required"`
 }
 
 type UpdateAccountRequest struct {
