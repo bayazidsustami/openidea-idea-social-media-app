@@ -1,13 +1,9 @@
 package comment_model
 
-import (
-	"database/sql"
-)
-
 type CommentCreator struct {
 	UserId      int
 	Name        string
-	ImageUrl    sql.NullString
+	ImageUrl    string
 	FriendCount int
 	CreatedAt   string
 }
