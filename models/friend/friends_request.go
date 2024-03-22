@@ -13,8 +13,8 @@ type FilterFriends struct {
 	SortBy   string `json:"sortBy" validate:"oneof=friendCount createdAt ''"`
 	OrderBy  string `json:"orderBy" validate:"oneof=asc desc ''"`
 	UserOnly bool   `json:"userOnly" validate:"boolean"`
-	Limit    int    `json:"limit"`
-	Offset   int    `json:"offset"`
+	Limit    int    `json:"limit" validate:"required,number,gte=0"`
+	Offset   int    `json:"offset" validate:"required,number,gte=0"`
 	Search   string `json:"search"`
 }
 

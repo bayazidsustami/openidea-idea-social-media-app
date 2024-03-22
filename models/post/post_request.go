@@ -7,14 +7,14 @@ import (
 
 type PostCreateRequest struct {
 	PostHtml string   `json:"postInHtml" validate:"required,min=2,max=500"`
-	Tags     []string `json:"tags" validate:"required,min=0"`
+	Tags     []string `json:"tags" validate:"required,min=0,dive,alphanum"`
 }
 
 type PostFilters struct {
-	Limit     int      `json:"limit" validate:"number"`
-	Offset    int      `json:"offset" validate:"number"`
+	Limit     int      `json:"limit" validate:"required,number,gte=0"`
+	Offset    int      `json:"offset" validate:"required,number,gte=0"`
 	Search    string   `json:"search"`
-	SearchTag []string `json:"searchTag" validate:"dive"`
+	SearchTag []string `json:"searchTag" validate:"dive,alphanum"`
 }
 
 func (pf *PostFilters) BuildQuery() string {
