@@ -45,19 +45,13 @@ func (controller *PostController) Create(ctx *fiber.Ctx) error {
 }
 
 func (controller *PostController) GetAll(ctx *fiber.Ctx) error {
-	filterRequest := new(post_model.PostFilters)
 
-	err := ctx.QueryParser(filterRequest)
-	if err != nil {
-		return customErr.ErrorBadRequest
-	}
-
-	_, err = controller.AuthService.GetValidUser(ctx)
+	_, err := controller.AuthService.GetValidUser(ctx)
 	if err != nil {
 		return err
 	}
 
-	response, err := controller.PostService.GetAll(ctx.UserContext(), *filterRequest)
+	response, err := controller.PostService.GetAll(ctx.UserContext(), ctx.Queries())
 	if err != nil {
 		return err
 	}

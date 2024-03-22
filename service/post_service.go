@@ -7,13 +7,14 @@ import (
 	post_model "openidea-idea-social-media-app/models/post"
 	"openidea-idea-social-media-app/repository"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
 
 type PostService interface {
 	Create(ctx context.Context, userId int, request post_model.PostCreateRequest) error
-	GetAll(ctx context.Context, filters post_model.PostFilters) (post_model.PostGetAllResponse, error)
+	GetAll(ctx context.Context, filters map[string]string) (post_model.PostGetAllResponse, error)
 }
 
 type PostServiceImpl struct {
@@ -50,8 +51,12 @@ func (service *PostServiceImpl) Create(ctx context.Context, userId int, request 
 	return nil
 }
 
-func (service *PostServiceImpl) GetAll(ctx context.Context, filters post_model.PostFilters) (post_model.PostGetAllResponse, error) {
-	err := service.Validator.Struct(filters)
+func (service *PostServiceImpl) GetAll(ctx context.Context, request map[string]string) (post_model.PostGetAllResponse, error) {
+	filters, err := validateQueryParams(request)
+	if err != nil {
+		return post_model.PostGetAllResponse{}, err
+	}
+	err = service.Validator.Struct(filters)
 	if err != nil {
 		return post_model.PostGetAllResponse{}, customErr.ErrorBadRequest
 	}
@@ -110,4 +115,52 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, filters post_model.P
 	}
 
 	return response, nil
+}
+
+func validateQueryParams(req map[string]string) (post_model.PostFilters, error) {
+	var filters post_model.PostFilters
+	limitVal, isLimitExists := req["limit"]
+	if !isLimitExists && limitVal == "" {
+		filters.Limit = 5
+	} else {
+		resultLimit, err := strconv.Atoi(limitVal)
+		if err != nil {
+			return post_model.PostFilters{}, customErr.ErrorBadRequest
+		}
+
+		if resultLimit < 0 {
+			return post_model.PostFilters{}, customErr.ErrorBadRequest
+		}
+
+		if resultLimit <= 5 {
+			filters.Limit = 5
+		} else {
+			filters.Limit = resultLimit
+		}
+	}
+
+	if isLimitExists && limitVal == "" {
+		return post_model.PostFilters{}, customErr.ErrorBadRequest
+	}
+
+	offsetVal, isOffsetExists := req["offset"]
+	if !isOffsetExists && offsetVal == "" {
+		filters.Offset = 0
+	} else {
+		resultOffset, err := strconv.Atoi(offsetVal)
+		if err != nil {
+			return post_model.PostFilters{}, customErr.ErrorBadRequest
+		}
+
+		filters.Offset = resultOffset
+	}
+
+	if isOffsetExists && offsetVal == "" {
+		return post_model.PostFilters{}, customErr.ErrorBadRequest
+	}
+
+	filters.Search = req["search"]
+	filters.SearchTag = strings.Split(req["searchTag"], ",")
+
+	return filters, nil
 }
