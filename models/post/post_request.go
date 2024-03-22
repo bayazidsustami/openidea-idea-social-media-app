@@ -11,8 +11,8 @@ type PostCreateRequest struct {
 }
 
 type PostFilters struct {
-	Limit     int      `json:"limit" validate:"required,number,gte=0"`
-	Offset    int      `json:"offset" validate:"required,number,gte=0"`
+	Limit     int      `json:"limit" validate:"number,gte=0"`
+	Offset    int      `json:"offset" validate:"number,gte=0"`
 	Search    string   `json:"search"`
 	SearchTag []string `json:"searchTag" validate:"dive,alphanum"`
 }
