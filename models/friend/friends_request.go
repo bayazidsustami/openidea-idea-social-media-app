@@ -11,7 +11,7 @@ type FriendRequest struct {
 
 type FilterFriends struct {
 	SortBy   string `json:"sortBy" validate:"oneof=friendCount createdAt ''"`
-	OrderBy  string `json:"orderBy" validate:"oneof=asc dsc ''"`
+	OrderBy  string `json:"orderBy" validate:"oneof=asc desc ''"`
 	UserOnly bool   `json:"userOnly" validate:"boolean"`
 	Limit    int    `json:"limit"`
 	Offset   int    `json:"offset"`
@@ -19,15 +19,14 @@ type FilterFriends struct {
 }
 
 func (ff *FilterFriends) BuildQuery(userId int) string {
-	query := "SELECT f.user_id_accepter, u.name, u.image_url, COUNT(f2.user_id_accepter) AS friends_count, f.created_at, count(*) over() AS total_item " +
-		"FROM users u " +
-		"JOIN friends f ON u.user_id = f.user_id_requester " +
-		"LEFT JOIN friends f2 ON f.user_id_accepter = f2.user_id_accepter "
+	query := "SELECT u.user_id, u.name, u.image_url, (SELECT COUNT(*) AS friends_count FROM friends f WHERE f.user_id_requester = u.user_id), u.created_at, count(*) over() AS total_item " +
+		"FROM users u "
 
 	condition := []string{}
 
 	if ff.UserOnly {
-		condition = append(condition, fmt.Sprintf(" f.user_id_requester = %d ", userId))
+		query += "JOIN friends f2 ON u.user_id = f2.user_id_requester "
+		query += fmt.Sprintf("WHERE f2.user_id_accepter IN (SELECT u2.user_id FROM users u2 WHERE u2.user_id = %d) ", userId)
 	}
 
 	if ff.Search != "" {
@@ -35,10 +34,12 @@ func (ff *FilterFriends) BuildQuery(userId int) string {
 	}
 
 	if len(condition) > 0 {
-		query += " WHERE " + strings.Join(condition, " AND ")
+		if ff.UserOnly {
+			query += " AND " + strings.Join(condition, " AND ")
+		} else {
+			query += " WHERE " + strings.Join(condition, " AND ")
+		}
 	}
-
-	query += "GROUP BY f.user_id_accepter, u.name, u.image_url, f.created_at, u.user_id "
 
 	// Add sorting and ordering
 	if ff.SortBy != "" {
@@ -50,7 +51,7 @@ func (ff *FilterFriends) BuildQuery(userId int) string {
 		if ff.SortBy == "friendCount" {
 			mappedSortBy = "friends_count"
 		} else {
-			mappedSortBy = "f.created_at"
+			mappedSortBy = "u.created_at"
 		}
 		query += fmt.Sprintf(" ORDER BY %s %s ", mappedSortBy, orderBy)
 	}
