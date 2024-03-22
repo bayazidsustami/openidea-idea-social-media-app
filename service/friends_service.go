@@ -38,9 +38,14 @@ func (service *FriendsServiceImpl) AddFriends(ctx context.Context, userId int, r
 		return customErr.ErrorBadRequest
 	}
 
+	uId, err := strconv.Atoi(request.UserId)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
 	userFriend := friend_model.Friend{
 		UserIdRequester: userId,
-		UserIdAccepter:  request.UserId,
+		UserIdAccepter:  uId,
 	}
 
 	err = service.FriendsRepository.Create(ctx, userFriend)
@@ -57,9 +62,14 @@ func (service *FriendsServiceImpl) RemoveFriends(ctx context.Context, userId int
 		return customErr.ErrorBadRequest
 	}
 
+	uId, err := strconv.Atoi(request.UserId)
+	if err != nil {
+		return customErr.ErrorBadRequest
+	}
+
 	userFriend := friend_model.Friend{
 		UserIdRequester: userId,
-		UserIdAccepter:  request.UserId,
+		UserIdAccepter:  uId,
 	}
 
 	err = service.FriendsRepository.Delete(ctx, userFriend)

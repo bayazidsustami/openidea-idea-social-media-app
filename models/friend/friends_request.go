@@ -6,7 +6,7 @@ import (
 )
 
 type FriendRequest struct {
-	UserId int `json:"userId" validate:"required"`
+	UserId string `json:"userId" validate:"required"`
 }
 
 type FilterFriends struct {
