@@ -4,7 +4,6 @@ import (
 	"net/url"
 	user_model "openidea-idea-social-media-app/models/user"
 	"regexp"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -94,19 +93,12 @@ func mustValidImageUrl(fl validator.FieldLevel) bool {
 	urlString := fl.Field().String()
 
 	// Parse the URL
-	u, err := url.Parse(urlString)
+	_, err := url.Parse(urlString)
 	if err != nil {
 		return false
 	}
 
-	// Get the file extension
-	parts := strings.Split(u.Path, ".")
-	extension := parts[len(parts)-1]
+	re := regexp.MustCompile(`(http[s]?:\/\/.*\.(?:png|jpg|gif|svg|jpeg))`)
 
-	// Check if the extension is jpg or jpeg
-	if extension != "jpg" && extension != "jpeg" {
-		return false
-	}
-
-	return true
+	return re.MatchString(urlString)
 }
