@@ -30,10 +30,31 @@ func (repository *CommentRepositoryImpl) Create(ctx context.Context, comment com
 	}
 	defer conn.Release()
 
-	// TODO: Need to add validation to only comment on user's friend's post
-	SQL_INSERT := "INSERT INTO comments(post_id, user_id, comment) values ($1, $2, $3) RETURNING comment_id"
+	SQL_GET_POST_ID := "SELECT EXISTS (SELECT 1 FROM posts WHERE post_id = $1)"
+	var isPostExists bool
 
-	result, err := conn.Exec(ctx, SQL_INSERT, comment.PostId, comment.UserId, comment.Comment)
+	err = conn.QueryRow(ctx, SQL_GET_POST_ID, comment.PostId).Scan(&isPostExists)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if !isPostExists {
+		return customErr.ErrorNotFound
+	}
+
+	SQL_INSERT := "INSERT INTO comments(post_id, comment, user_id) " +
+		"SELECT $1, $2, $3 " +
+		"FROM posts p " +
+		"JOIN users u ON p.user_id = u.user_id " +
+		"JOIN friends f ON u.user_id = f.user_id_requester " +
+		"WHERE f.user_id_accepter = $3 " +
+		"RETURNING comment_id"
+
+	result, err := conn.Exec(ctx, SQL_INSERT, comment.PostId, comment.Comment, comment.UserId)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
