@@ -21,11 +21,11 @@ func (pf *PostFilters) BuildQuery() string {
 	query := "SELECT p.post_id, p.post_html, p.tags, p.created_at, " +
 		"u.user_id, u.name, u.image_url, u.created_at, " +
 		"(SELECT COUNT(*) FROM friends f WHERE p.user_id = f.user_id_requester), " +
-		"jsonb_agg(jsonb_build_object(" +
+		"COALESCE(jsonb_agg(jsonb_build_object(" +
 		"'comment', c.comment," +
 		`'createdAt', to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'),` +
 		`'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', coalesce(cu.image_url, ''), 'friendCount', (SELECT COUNT(*) FROM friends cf WHERE cu.user_id = cf.user_id_requester), 'createdAt', to_char(cu.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'))` +
-		")) AS comments, " +
+		")) FILTER (WHERE c.comment_id IS NOT NULL), '[]') AS comments, " +
 		"count(*) over() AS total_item " +
 		"FROM posts p " +
 		"JOIN users u ON p.user_id = u.user_id " +
@@ -50,7 +50,7 @@ func (pf *PostFilters) BuildQuery() string {
 		query += " WHERE " + strings.Join(condition, " AND ")
 	}
 
-	query += "GROUP BY p.post_id, u.user_id ORDER BY p.created_at "
+	query += "GROUP BY p.post_id, u.user_id	 ORDER BY p.created_at "
 
 	// Add limit and offset
 	if pf.Limit > 0 {
