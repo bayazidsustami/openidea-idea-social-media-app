@@ -76,7 +76,7 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, request map[string]s
 				Creator: post_model.CreatorResponse{
 					UserId:      comment.Creator.UserId,
 					Name:        comment.Creator.Name,
-					ImageUrl:    comment.Creator.ImageUrl.String,
+					ImageUrl:    comment.Creator.ImageUrl,
 					FriendCount: comment.Creator.FriendCount,
 					CreatedAt:   comment.Creator.CreatedAt,
 				},

@@ -30,11 +30,17 @@ func (repository *CommentRepositoryImpl) Create(ctx context.Context, comment com
 	}
 	defer conn.Release()
 
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+
 	SQL_GET_POST_ID := "SELECT EXISTS (SELECT 1 FROM posts WHERE post_id = $1)"
 	var isPostExists bool
 
-	err = conn.QueryRow(ctx, SQL_GET_POST_ID, comment.PostId).Scan(&isPostExists)
+	err = tx.QueryRow(ctx, SQL_GET_POST_ID, comment.PostId).Scan(&isPostExists)
 	if err != nil {
+		tx.Rollback(ctx)
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
 		} else {
@@ -43,19 +49,35 @@ func (repository *CommentRepositoryImpl) Create(ctx context.Context, comment com
 	}
 
 	if !isPostExists {
+		tx.Rollback(ctx)
 		return customErr.ErrorNotFound
 	}
 
-	SQL_INSERT := "INSERT INTO comments(post_id, comment, user_id) " +
-		"SELECT $1, $2, $3 " +
-		"FROM posts p " +
-		"JOIN users u ON p.user_id = u.user_id " +
+	SQL_GET_FRIEND := "SELECT EXISTS (SELECT 1 FROM users u " +
 		"JOIN friends f ON u.user_id = f.user_id_requester " +
-		"WHERE f.user_id_accepter = $3 " +
-		"RETURNING comment_id"
+		"WHERE f.user_id_accepter = $1)"
+	var isFriend bool
 
-	result, err := conn.Exec(ctx, SQL_INSERT, comment.PostId, comment.Comment, comment.UserId)
+	err = tx.QueryRow(ctx, SQL_GET_FRIEND, comment.UserId).Scan(&isFriend)
 	if err != nil {
+		tx.Rollback(ctx)
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorBadRequest
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if !isFriend {
+		tx.Rollback(ctx)
+		return customErr.ErrorBadRequest
+	}
+
+	SQL_INSERT := "INSERT INTO comments(post_id, comment, user_id) values ($1, $2, $3)"
+
+	result, err := tx.Exec(ctx, SQL_INSERT, comment.PostId, comment.Comment, comment.UserId)
+	if err != nil {
+		tx.Rollback(ctx)
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
 		} else {
@@ -64,8 +86,11 @@ func (repository *CommentRepositoryImpl) Create(ctx context.Context, comment com
 	}
 
 	if result.RowsAffected() == 0 {
+		tx.Rollback(ctx)
 		return customErr.ErrorBadRequest
 	}
+
+	tx.Commit(ctx)
 
 	return nil
 }
