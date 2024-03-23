@@ -38,9 +38,8 @@ func RegisterRoute(app *fiber.App, dbPool *pgxpool.Pool) {
 	imageService := service.NewImageService(security.GetAws3Session())
 	imageController := controller.NewImageUploadController(authService, imageService)
 
-	user := app.Group("/v1/user")
-	user.Post("/register", userController.Register)
-	user.Post("/login", userController.Login)
+	app.Post("/v1/user/register", userController.Register)
+	app.Post("/v1/user/login", userController.Login)
 
 	app.Use(security.CheckTokenHeaderExist)
 	app.Use(security.GetJwtTokenHandler())
