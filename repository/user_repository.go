@@ -168,7 +168,7 @@ func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgx
 		}
 	}
 
-	if resPhone.String != "" {
+	if resPhone.String == "" {
 		return customErr.ErrorBadRequest
 	}
 
