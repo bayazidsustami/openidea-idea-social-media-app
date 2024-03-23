@@ -42,7 +42,7 @@ run-docker:
 	-e S3_BUCKET_NAME=$(shell echo $$S3_BUCKET_NAME) \
 	-e S3_REGION=$(shell echo $$S3_REGION) \
 	-e DB_PARAMS=$(shell echo $$DB_PARAMS) \
-	-p 8000:8000 \
+	-p 8080:8080 \
 	social-app
 
 clean:
