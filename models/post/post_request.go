@@ -14,7 +14,7 @@ type PostFilters struct {
 	Limit     int      `json:"limit" validate:"number,gte=0"`
 	Offset    int      `json:"offset" validate:"number,gte=0"`
 	Search    string   `json:"search"`
-	SearchTag []string `json:"searchTag" validate:"dive,alphanum"`
+	SearchTag []string `json:"searchTag"`
 }
 
 func (pf *PostFilters) BuildQuery() string {
