@@ -11,7 +11,7 @@ import (
 )
 
 type PostRepository interface {
-	Create(ctx context.Context, post post_model.Post, userId int) error
+	Create(ctx context.Context, post post_model.Post, userId string) error
 	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error)
 }
 
@@ -25,7 +25,7 @@ func NewPostRepository(DBPool *pgxpool.Pool) PostRepository {
 	}
 }
 
-func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post, userId int) error {
+func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post, userId string) error {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer

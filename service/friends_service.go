@@ -12,9 +12,9 @@ import (
 )
 
 type FriendsService interface {
-	AddFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error
-	RemoveFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error
-	GetAllFriends(ctx context.Context, userId int, filterRequest map[string]string) (friend_model.FriendsPagingResponse, error)
+	AddFriends(ctx context.Context, userId string, request friend_model.FriendRequest) error
+	RemoveFriends(ctx context.Context, userId string, request friend_model.FriendRequest) error
+	GetAllFriends(ctx context.Context, userId string, filterRequest map[string]string) (friend_model.FriendsPagingResponse, error)
 }
 
 type FriendsServiceImpl struct {
@@ -32,20 +32,15 @@ func NewFriendsService(
 	}
 }
 
-func (service *FriendsServiceImpl) AddFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error {
+func (service *FriendsServiceImpl) AddFriends(ctx context.Context, userId string, request friend_model.FriendRequest) error {
 	err := service.Validator.Struct(request)
-	if err != nil {
-		return customErr.ErrorBadRequest
-	}
-
-	uId, err := strconv.Atoi(request.UserId)
 	if err != nil {
 		return customErr.ErrorBadRequest
 	}
 
 	userFriend := friend_model.Friend{
 		UserIdRequester: userId,
-		UserIdAccepter:  uId,
+		UserIdAccepter:  request.UserId,
 	}
 
 	err = service.FriendsRepository.Create(ctx, userFriend)
@@ -56,20 +51,15 @@ func (service *FriendsServiceImpl) AddFriends(ctx context.Context, userId int, r
 	return nil
 }
 
-func (service *FriendsServiceImpl) RemoveFriends(ctx context.Context, userId int, request friend_model.FriendRequest) error {
+func (service *FriendsServiceImpl) RemoveFriends(ctx context.Context, userId string, request friend_model.FriendRequest) error {
 	err := service.Validator.Struct(request)
-	if err != nil {
-		return customErr.ErrorBadRequest
-	}
-
-	uId, err := strconv.Atoi(request.UserId)
 	if err != nil {
 		return customErr.ErrorBadRequest
 	}
 
 	userFriend := friend_model.Friend{
 		UserIdRequester: userId,
-		UserIdAccepter:  uId,
+		UserIdAccepter:  request.UserId,
 	}
 
 	err = service.FriendsRepository.Delete(ctx, userFriend)
@@ -80,7 +70,7 @@ func (service *FriendsServiceImpl) RemoveFriends(ctx context.Context, userId int
 	return nil
 }
 
-func (service *FriendsServiceImpl) GetAllFriends(ctx context.Context, userId int, filterRequest map[string]string) (friend_model.FriendsPagingResponse, error) {
+func (service *FriendsServiceImpl) GetAllFriends(ctx context.Context, userId string, filterRequest map[string]string) (friend_model.FriendsPagingResponse, error) {
 	req, err := validateFilterQueryMap(filterRequest)
 	if err != nil {
 		return friend_model.FriendsPagingResponse{}, customErr.ErrorBadRequest

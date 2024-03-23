@@ -13,7 +13,7 @@ import (
 type FriendsRepository interface {
 	Create(ctx context.Context, userFriends friend_model.Friend) error
 	Delete(ctx context.Context, userFriends friend_model.Friend) error
-	GetAll(ctx context.Context, userId int, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error)
+	GetAll(ctx context.Context, userId string, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error)
 }
 
 type FriendsRepositoryImpl struct {
@@ -80,7 +80,7 @@ func (repository *FriendsRepositoryImpl) Delete(ctx context.Context, userFriends
 
 }
 
-func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId int, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error) {
+func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId string, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error) {
 	query := filterFriend.BuildQuery(userId)
 
 	conn, err := repository.DBPool.Acquire(ctx)

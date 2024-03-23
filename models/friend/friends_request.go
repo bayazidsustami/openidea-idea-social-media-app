@@ -18,7 +18,7 @@ type FilterFriends struct {
 	Search   string `json:"search"`
 }
 
-func (ff *FilterFriends) BuildQuery(userId int) string {
+func (ff *FilterFriends) BuildQuery(userId string) string {
 	query := "SELECT u.user_id, u.name, u.image_url, (SELECT COUNT(*) AS friends_count FROM friends f WHERE f.user_id_requester = u.user_id), u.created_at, count(*) over() AS total_item " +
 		"FROM users u "
 
@@ -26,7 +26,7 @@ func (ff *FilterFriends) BuildQuery(userId int) string {
 
 	if ff.UserOnly {
 		query += "JOIN friends f2 ON u.user_id = f2.user_id_requester "
-		query += fmt.Sprintf("WHERE f2.user_id_accepter IN (SELECT u2.user_id FROM users u2 WHERE u2.user_id = %d) ", userId)
+		query += fmt.Sprintf("WHERE f2.user_id_accepter IN (SELECT u2.user_id FROM users u2 WHERE u2.user_id = %s) ", userId)
 	}
 
 	if ff.Search != "" {

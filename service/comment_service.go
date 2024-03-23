@@ -11,7 +11,7 @@ import (
 )
 
 type CommentService interface {
-	Create(ctx context.Context, userId int, request comment_model.CommentRequest) error
+	Create(ctx context.Context, userId string, request comment_model.CommentRequest) error
 }
 
 type CommentServiceImpl struct {
@@ -29,7 +29,7 @@ func NewCommentService(
 	}
 }
 
-func (service *CommentServiceImpl) Create(ctx context.Context, userId int, request comment_model.CommentRequest) error {
+func (service *CommentServiceImpl) Create(ctx context.Context, userId string, request comment_model.CommentRequest) error {
 	err := service.Validator.Struct(request)
 	if err != nil {
 		return customErr.ErrorBadRequest

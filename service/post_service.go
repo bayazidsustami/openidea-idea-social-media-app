@@ -13,7 +13,7 @@ import (
 )
 
 type PostService interface {
-	Create(ctx context.Context, userId int, request post_model.PostCreateRequest) error
+	Create(ctx context.Context, userId string, request post_model.PostCreateRequest) error
 	GetAll(ctx context.Context, filters map[string]string) (post_model.PostGetAllResponse, error)
 }
 
@@ -32,7 +32,7 @@ func NewPostService(
 	}
 }
 
-func (service *PostServiceImpl) Create(ctx context.Context, userId int, request post_model.PostCreateRequest) error {
+func (service *PostServiceImpl) Create(ctx context.Context, userId string, request post_model.PostCreateRequest) error {
 	err := service.Validator.Struct(request)
 	if err != nil {
 		return customErr.ErrorBadRequest

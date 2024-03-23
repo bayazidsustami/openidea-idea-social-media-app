@@ -6,7 +6,7 @@ import (
 )
 
 type Creator struct {
-	UserId      int
+	UserId      string
 	Name        string
 	ImageUrl    sql.NullString
 	FriendCount int
