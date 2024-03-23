@@ -49,7 +49,7 @@ func (pf *PostFilters) BuildQuery() string {
 		query += " WHERE " + strings.Join(condition, " AND ")
 	}
 
-	query += "GROUP BY p.post_id, u.user_id	 ORDER BY p.created_at "
+	query += "GROUP BY p.post_id, u.user_id ORDER BY p.created_at DESC "
 
 	// Add limit and offset
 	if pf.Limit > 0 {
