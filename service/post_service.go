@@ -156,7 +156,9 @@ func validateQueryParams(req map[string]string) (post_model.PostFilters, error) 
 	}
 
 	filters.Search = req["search"]
-	filters.SearchTag = strings.Split(req["searchTag"], ",")
+	if len(req["searchTag"]) > 0 {
+		filters.SearchTag = strings.Split(req["searchTag"], ",")
+	}
 
 	return filters, nil
 }
