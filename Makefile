@@ -21,7 +21,7 @@ startgrafana:
 	docker run --rm -p 3000:3000 --name=grafana grafana/grafana-oss || docker start grafana
 
 build:
-	GOARCH=amd64 GOOS=linux go build -o $(shell pwd)/build/main main.go
+	GOARCH=amd64 GOOS=linux go build -o $(shell pwd)/build/main_hvp main.go
 
 build-docker:
 	docker build -t social-app .
