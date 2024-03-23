@@ -68,7 +68,7 @@ func (service *PostServiceImpl) GetAll(ctx context.Context, request map[string]s
 
 	var data []post_model.PostDataResponse
 	for _, post := range posts {
-		var comments []post_model.CommentResponse
+		comments := []post_model.CommentResponse{}
 		for _, comment := range post.Comments {
 			comments = append(comments, post_model.CommentResponse{
 				Comment:   comment.Comment,
