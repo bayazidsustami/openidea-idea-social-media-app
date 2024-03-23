@@ -5,7 +5,6 @@ import (
 	"openidea-idea-social-media-app/customErr"
 	post_model "openidea-idea-social-media-app/models/post"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -89,10 +88,6 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 		}
 
 		posts = append(posts, post)
-	}
-
-	if len(posts) == 0 {
-		return nil, 0, fiber.NewError(fiber.StatusNotFound, "Not Found")
 	}
 
 	return posts, totalPosts, nil
