@@ -18,19 +18,42 @@ type PostFilters struct {
 }
 
 func (pf *PostFilters) BuildQuery() string {
-	query := "SELECT p.post_id, p.post_html, p.tags, p.created_at, " +
-		"u.user_id, u.name, u.image_url, u.created_at, " +
-		"(SELECT COUNT(*) FROM friends f WHERE p.user_id = f.user_id_requester), " +
-		"jsonb_agg(jsonb_build_object(" +
-		"'comment', c.comment," +
-		`'createdAt', to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'),` +
-		`'creator', jsonb_build_object('userId', cu.user_id, 'name', cu.name, 'imageUrl', coalesce(cu.image_url, ''), 'friendCount', (SELECT COUNT(*) FROM friends cf WHERE cu.user_id = cf.user_id_requester), 'createdAt', to_char(cu.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF'))` +
-		")) AS comments, " +
-		"count(*) over() AS total_item " +
-		"FROM posts p " +
-		"JOIN users u ON p.user_id = u.user_id " +
-		"LEFT JOIN comments c ON p.post_id = c.post_id " +
-		"LEFT JOIN users cu ON c.user_id = cu.user_id "
+	query := `
+		SELECT p.post_id AS "postId",
+			json_build_object(
+				'postInHtml', p.post_html,
+				'tags', p.tags,
+				'createdAt', to_char(p.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF')
+			) AS "post",
+			json_agg(
+				json_build_object(
+					'comment', c.comment,
+					'creator', json_build_object(
+						'userId', u.user_id,
+						'name', u.name,
+						'imageUrl', u.image_url,
+						'friendCount', (
+							SELECT COUNT(*) FROM friends f WHERE f.user_id_requester = u.user_id
+						)
+					),
+					'createdAt', to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SSOF')
+				) ORDER BY c.created_at
+			) AS "comments",
+			json_build_object(
+					'userId', u.user_id,
+					'name', u.name,
+					'imageUrl', u.image_url,
+					'friendCount', (
+						SELECT COUNT(*) FROM friends f WHERE f.user_id_requester = u.user_id
+					)
+			) AS "creator"
+		FROM 
+			posts p
+		LEFT JOIN 
+			comments c ON p.post_id = c.post_id
+		LEFT JOIN 
+			users u ON c.user_id = u.user_id
+	`
 
 	condition := []string{}
 
@@ -38,19 +61,19 @@ func (pf *PostFilters) BuildQuery() string {
 		condition = append(condition, fmt.Sprintf("p.post_html LIKE '%%%s%%' ", pf.Search))
 	}
 
-	if pf.SearchTag != nil && len(pf.SearchTag) > 0 {
+	if pf.SearchTag != nil && len(pf.SearchTag) > 1 {
 		tagsCondition := []string{}
 		for _, tag := range pf.SearchTag {
-			tagsCondition = append(tagsCondition, fmt.Sprintf("'%s' = ANY(p.tags)", tag))
+			tagsCondition = append(tagsCondition, fmt.Sprintf("'%s' = ANY(p.tags) ", tag))
 		}
 		condition = append(condition, strings.Join(tagsCondition, " OR "))
 	}
-
 	if len(condition) > 0 {
 		query += " WHERE " + strings.Join(condition, " AND ")
 	}
 
-	query += "GROUP BY p.post_id, u.user_id ORDER BY p.created_at "
+	query += "GROUP BY p.post_id, p.post_html, p.tags, p.created_at, c.created_at, u.user_id " +
+		"ORDER BY p.post_id, c.created_at"
 
 	// Add limit and offset
 	if pf.Limit > 0 {
