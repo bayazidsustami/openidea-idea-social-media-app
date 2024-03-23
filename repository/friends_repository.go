@@ -7,6 +7,7 @@ import (
 	friend_model "openidea-idea-social-media-app/models/friend"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -39,6 +40,11 @@ func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends
 
 	res, err := conn.Exec(ctx, SQL_ADD_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
 	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Code == "23503" {
+				return customErr.ErrorNotFound
+			}
+		}
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
 		} else {
