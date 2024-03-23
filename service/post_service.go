@@ -132,11 +132,7 @@ func validateQueryParams(req map[string]string) (post_model.PostFilters, error) 
 			return post_model.PostFilters{}, customErr.ErrorBadRequest
 		}
 
-		if resultLimit <= 5 {
-			filters.Limit = 5
-		} else {
-			filters.Limit = resultLimit
-		}
+		filters.Limit = resultLimit
 	}
 
 	if isLimitExists && limitVal == "" {

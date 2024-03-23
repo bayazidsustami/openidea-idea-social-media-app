@@ -159,11 +159,7 @@ func validateFilterQueryMap(req map[string]string) (friend_model.FilterFriends, 
 			return friend_model.FilterFriends{}, customErr.ErrorBadRequest
 		}
 
-		if resultLimit <= 5 {
-			filters.Limit = 5
-		} else {
-			filters.Limit = resultLimit
-		}
+		filters.Limit = resultLimit
 	}
 
 	if isLimitExists && limitVal == "" {
