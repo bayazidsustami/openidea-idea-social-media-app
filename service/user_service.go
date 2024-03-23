@@ -47,13 +47,7 @@ func (service *UserServiceImpl) Register(ctx context.Context, request user_model
 		return user_model.UserRegisterResponse[user_model.UserData]{}, customErr.ErrorBadRequest
 	}
 
-	conn, err := service.DBPool.Acquire(ctx)
-	if err != nil {
-		return user_model.UserRegisterResponse[user_model.UserData]{}, customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := service.DBPool.Begin(ctx)
 	if err != nil {
 		return user_model.UserRegisterResponse[user_model.UserData]{}, customErr.ErrorInternalServer
 	}
@@ -118,12 +112,6 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 		return user_model.UserLoginResponse{}, customErr.ErrorBadRequest
 	}
 
-	conn, err := service.DBPool.Acquire(ctx)
-	if err != nil {
-		return user_model.UserLoginResponse{}, customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
 	var user user_model.User
 	if request.CredentialType == "email" {
 		user = user_model.User{
@@ -135,7 +123,7 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 		}
 	}
 
-	result, err := service.UserRepository.Login(ctx, conn, user)
+	result, err := service.UserRepository.Login(ctx, service.DBPool, user)
 	if err != nil {
 		return user_model.UserLoginResponse{}, err
 	}
@@ -169,12 +157,7 @@ func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId string, em
 		return customErr.ErrorBadRequest
 	}
 
-	conn, err := service.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-	err = service.UserRepository.UpdateEmail(ctx, conn, userId, emailReq.Email)
+	err = service.UserRepository.UpdateEmail(ctx, service.DBPool, userId, emailReq.Email)
 	if err != nil {
 		return err
 	}
@@ -188,12 +171,7 @@ func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId string, ph
 		return customErr.ErrorBadRequest
 	}
 
-	conn, err := service.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-	err = service.UserRepository.UpdatePhone(ctx, conn, userId, phoneReq.Phone)
+	err = service.UserRepository.UpdatePhone(ctx, service.DBPool, userId, phoneReq.Phone)
 	if err != nil {
 		return err
 	}
@@ -207,19 +185,13 @@ func (service *UserServiceImpl) UpdateAccount(ctx context.Context, userId string
 		return customErr.ErrorBadRequest
 	}
 
-	conn, err := service.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
 	user := user_model.User{
 		UserId:   userId,
 		Name:     request.Name,
 		ImageUrl: request.ImageUrl,
 	}
 
-	err = service.UserRepository.Update(ctx, conn, user)
+	err = service.UserRepository.Update(ctx, service.DBPool, user)
 	if err != nil {
 		return err
 	}

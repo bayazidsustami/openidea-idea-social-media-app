@@ -18,11 +18,11 @@ var (
 	applicationDbHost     = viper.GetString("DB_HOST")
 	applicationDbPort     = viper.GetString("DB_PORT")
 	applicationDbParams   = viper.GetString("DB_PARAMS")
-	maxTimeout            = 20 * time.Second
+	maxTimeout            = 10 * time.Second
 	maxConnLifeTime       = 60 * time.Minute
 	maxConnIdleTime       = 5 * time.Minute
 	maxConns              = int32(100)
-	minConns              = int32(10)
+	minConns              = int32(0)
 	dbPool                *pgxpool.Pool
 	once                  sync.Once
 )

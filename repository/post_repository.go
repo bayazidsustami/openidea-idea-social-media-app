@@ -25,14 +25,10 @@ func NewPostRepository(DBPool *pgxpool.Pool) PostRepository {
 }
 
 func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post, userId string) error {
-	conn, err := repository.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
 
 	SQL_INSERT := "INSERT INTO posts(post_html, tags, user_id) values ($1, $2, $3)"
 
-	res, err := conn.Exec(ctx, SQL_INSERT, post.PostHtml, post.Tags, userId)
+	res, err := repository.DBPool.Exec(ctx, SQL_INSERT, post.PostHtml, post.Tags, userId)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
@@ -49,15 +45,9 @@ func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_mode
 }
 
 func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error) {
-	conn, err := repository.DBPool.Acquire(ctx)
-	if err != nil {
-		return nil, 0, customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
 	query := filters.BuildQuery()
 
-	rows, err := conn.Query(ctx, query)
+	rows, err := repository.DBPool.Query(ctx, query)
 	if err != nil {
 		return nil, 0, customErr.ErrorInternalServer
 	}

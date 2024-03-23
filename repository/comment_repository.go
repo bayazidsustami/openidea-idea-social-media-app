@@ -24,13 +24,7 @@ func NewCommentRepository(DBPool *pgxpool.Pool) CommentRepository {
 }
 
 func (repository *CommentRepositoryImpl) Create(ctx context.Context, comment comment_model.Comment) error {
-	conn, err := repository.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
-	tx, err := conn.Begin(ctx)
+	tx, err := repository.DBPool.Begin(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
 	}

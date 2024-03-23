@@ -12,10 +12,10 @@ import (
 
 type UserRepository interface {
 	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
-	Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error)
-	UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId string, email string) error
-	UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId string, phone string) error
-	Update(ctx context.Context, conn *pgxpool.Conn, user user_model.User) error
+	Login(ctx context.Context, conn *pgxpool.Pool, user user_model.User) (user_model.User, error)
+	UpdateEmail(ctx context.Context, conn *pgxpool.Pool, userId string, email string) error
+	UpdatePhone(ctx context.Context, conn *pgxpool.Pool, userId string, phone string) error
+	Update(ctx context.Context, conn *pgxpool.Pool, user user_model.User) error
 }
 
 type UserRepositoryImpl struct {
@@ -56,7 +56,7 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	return user, nil
 }
 
-func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error) {
+func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.Pool, user user_model.User) (user_model.User, error) {
 	var SQL_GET_USER string
 	var emailOrPhone string
 	if user.Email.String != "" {
@@ -87,7 +87,7 @@ func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.C
 	return result, nil
 }
 
-func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId string, email string) error {
+func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgxpool.Pool, userId string, email string) error {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
@@ -149,7 +149,7 @@ func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgx
 	return nil
 }
 
-func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId string, phone string) error {
+func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Pool, userId string, phone string) error {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
@@ -211,7 +211,7 @@ func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgx
 	return nil
 }
 
-func (repository *UserRepositoryImpl) Update(ctx context.Context, conn *pgxpool.Conn, user user_model.User) error {
+func (repository *UserRepositoryImpl) Update(ctx context.Context, conn *pgxpool.Pool, user user_model.User) error {
 	UPDATE_ACC := "UPDATE users " +
 		"SET name = $1, image_url = $2, updated_at = CURRENT_TIMESTAMP " +
 		"WHERE user_id = $3"
