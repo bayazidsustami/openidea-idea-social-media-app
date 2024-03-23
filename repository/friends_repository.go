@@ -32,13 +32,8 @@ func NewFriendRepository(
 func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends friend_model.Friend) error {
 	SQL_ADD_FRIENDS := "INSERT INTO friends(user_id_requester, user_id_accepter) VALUES ($1, $2), ($2, $1) " +
 		"ON CONFLICT (user_id_requester, user_id_accepter) DO NOTHING"
-	conn, err := repository.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
-	defer conn.Release()
 
-	res, err := conn.Exec(ctx, SQL_ADD_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
+	res, err := repository.DBPool.Exec(ctx, SQL_ADD_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			if pgErr.Code == "23503" {
@@ -63,13 +58,7 @@ func (repository *FriendsRepositoryImpl) Delete(ctx context.Context, userFriends
 	SQL_DELETE_FRIENDS := "DELETE FROM friends WHERE user_id_requester = $1 AND user_id_accepter = $2 " +
 		"OR user_id_accepter = $1 AND user_id_requester = $2"
 
-	conn, err := repository.DBPool.Acquire(ctx)
-	if err != nil {
-		return customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
-	res, err := conn.Exec(ctx, SQL_DELETE_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
+	res, err := repository.DBPool.Exec(ctx, SQL_DELETE_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
@@ -89,13 +78,7 @@ func (repository *FriendsRepositoryImpl) Delete(ctx context.Context, userFriends
 func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId string, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error) {
 	query := filterFriend.BuildQuery(userId)
 
-	conn, err := repository.DBPool.Acquire(ctx)
-	if err != nil {
-		return friend_model.FriendDataPaging{}, customErr.ErrorInternalServer
-	}
-	defer conn.Release()
-
-	rows, err := conn.Query(ctx, query)
+	rows, err := repository.DBPool.Query(ctx, query)
 	if err != nil {
 		return friend_model.FriendDataPaging{}, customErr.ErrorInternalServer
 	}
