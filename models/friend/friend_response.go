@@ -9,7 +9,7 @@ type FriendsPagingResponse struct {
 }
 
 type FriendDataResponse struct {
-	UserId      int    `json:"userId"`
+	UserId      string `json:"userId"`
 	Name        string `json:"name"`
 	ImageUrl    string `json:"imageUrl"`
 	FriendCount int    `json:"friendCount"`

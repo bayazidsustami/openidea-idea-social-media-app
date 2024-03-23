@@ -14,8 +14,8 @@ import (
 var tokenExpDuration = time.Now().Add(time.Minute * 30).Unix()
 
 type AuthService interface {
-	GenerateToken(ctx context.Context, userId int) (string, error)
-	GetValidUser(ctx *fiber.Ctx) (int, error)
+	GenerateToken(ctx context.Context, userId string) (string, error)
+	GetValidUser(ctx *fiber.Ctx) (string, error)
 }
 
 type AuthServiceImpl struct {
@@ -25,7 +25,7 @@ func NewAuthService() AuthService {
 	return &AuthServiceImpl{}
 }
 
-func (service *AuthServiceImpl) GenerateToken(ctx context.Context, userId int) (string, error) {
+func (service *AuthServiceImpl) GenerateToken(ctx context.Context, userId string) (string, error) {
 
 	claims := jwt.MapClaims{
 		"user_id": userId,
@@ -42,10 +42,10 @@ func (service *AuthServiceImpl) GenerateToken(ctx context.Context, userId int) (
 	return signedToken, nil
 }
 
-func (service *AuthServiceImpl) GetValidUser(ctx *fiber.Ctx) (int, error) {
+func (service *AuthServiceImpl) GetValidUser(ctx *fiber.Ctx) (string, error) {
 	userInfo := ctx.Locals(security.JWT_CONTEXT_KEY).(*jwt.Token)
 	claims := userInfo.Claims.((jwt.MapClaims))
-	userId := claims["user_id"].(float64)
+	userId := claims["user_id"].(string)
 
-	return int(userId), nil
+	return userId, nil
 }

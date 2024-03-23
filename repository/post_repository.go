@@ -5,13 +5,12 @@ import (
 	"openidea-idea-social-media-app/customErr"
 	post_model "openidea-idea-social-media-app/models/post"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PostRepository interface {
-	Create(ctx context.Context, post post_model.Post, userId int) error
+	Create(ctx context.Context, post post_model.Post, userId string) error
 	GetAll(ctx context.Context, filters post_model.PostFilters) ([]post_model.Post, int, error)
 }
 
@@ -25,7 +24,7 @@ func NewPostRepository(DBPool *pgxpool.Pool) PostRepository {
 	}
 }
 
-func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post, userId int) error {
+func (repository *PostRepositoryImpl) Create(ctx context.Context, post post_model.Post, userId string) error {
 	conn, err := repository.DBPool.Acquire(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
@@ -89,10 +88,6 @@ func (repository *PostRepositoryImpl) GetAll(ctx context.Context, filters post_m
 		}
 
 		posts = append(posts, post)
-	}
-
-	if len(posts) == 0 {
-		return nil, 0, fiber.NewError(fiber.StatusNotFound, "Not Found")
 	}
 
 	return posts, totalPosts, nil

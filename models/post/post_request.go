@@ -14,7 +14,7 @@ type PostFilters struct {
 	Limit     int      `json:"limit" validate:"number,gte=0"`
 	Offset    int      `json:"offset" validate:"number,gte=0"`
 	Search    string   `json:"search"`
-	SearchTag []string `json:"searchTag" validate:"dive,alphanum"`
+	SearchTag []string `json:"searchTag"`
 }
 
 func (pf *PostFilters) BuildQuery() string {
@@ -38,14 +38,13 @@ func (pf *PostFilters) BuildQuery() string {
 		condition = append(condition, fmt.Sprintf("p.post_html LIKE '%%%s%%' ", pf.Search))
 	}
 
-	if pf.SearchTag != nil && len(pf.SearchTag) > 0 {
+	if pf.SearchTag != nil && len(pf.SearchTag) > 1 {
 		tagsCondition := []string{}
 		for _, tag := range pf.SearchTag {
-			tagsCondition = append(tagsCondition, fmt.Sprintf("'%s' = ANY(p.tags)", tag))
+			tagsCondition = append(tagsCondition, fmt.Sprintf("'%s' = ANY(p.tags) ", tag))
 		}
 		condition = append(condition, strings.Join(tagsCondition, " OR "))
 	}
-
 	if len(condition) > 0 {
 		query += " WHERE " + strings.Join(condition, " AND ")
 	}

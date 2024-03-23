@@ -7,12 +7,12 @@ import (
 )
 
 type Friend struct {
-	UserIdRequester int
-	UserIdAccepter  int
+	UserIdRequester string
+	UserIdAccepter  string
 }
 
 type FriendData struct {
-	UserId      int
+	UserId      string
 	Name        string
 	ImageUrl    sql.NullString
 	FriendCount int

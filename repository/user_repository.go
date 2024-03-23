@@ -13,8 +13,8 @@ import (
 type UserRepository interface {
 	Register(ctx context.Context, tx pgx.Tx, user user_model.User) (user_model.User, error)
 	Login(ctx context.Context, conn *pgxpool.Conn, user user_model.User) (user_model.User, error)
-	UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId int, email string) error
-	UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId int, phone string) error
+	UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId string, email string) error
+	UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId string, phone string) error
 	Update(ctx context.Context, conn *pgxpool.Conn, user user_model.User) error
 }
 
@@ -29,18 +29,18 @@ func (repository *UserRepositoryImpl) Register(ctx context.Context, tx pgx.Tx, u
 	var SQL_INSERT string
 	var emailOrPhone string
 	if user.Email.String != "" {
-		SQL_INSERT = "INSERT INTO users(email, password, name) values ($1, $2, $3) " +
+		SQL_INSERT = "INSERT INTO users(user_id, email, password, name) values (gen_random_uuid(), $1, $2, $3) " +
 			"ON CONFLICT(email) " +
 			"DO NOTHING RETURNING user_id"
 		emailOrPhone = user.Email.String
 	} else {
-		SQL_INSERT = "INSERT INTO users(phone, password, name) values ($1, $2, $3) " +
+		SQL_INSERT = "INSERT INTO users(user_id, phone, password, name) values (gen_random_uuid(), $1, $2, $3) " +
 			"ON CONFLICT(phone) " +
 			"DO NOTHING RETURNING user_id"
 		emailOrPhone = user.Phone.String
 	}
 
-	var idUser int
+	var idUser string
 	err := tx.QueryRow(ctx, SQL_INSERT, emailOrPhone, user.Password, user.Name).Scan(&idUser)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -87,7 +87,7 @@ func (repository *UserRepositoryImpl) Login(ctx context.Context, conn *pgxpool.C
 	return result, nil
 }
 
-func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId int, email string) error {
+func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgxpool.Conn, userId string, email string) error {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer
@@ -149,7 +149,7 @@ func (repository *UserRepositoryImpl) UpdateEmail(ctx context.Context, conn *pgx
 	return nil
 }
 
-func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId int, phone string) error {
+func (repository *UserRepositoryImpl) UpdatePhone(ctx context.Context, conn *pgxpool.Conn, userId string, phone string) error {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return customErr.ErrorInternalServer

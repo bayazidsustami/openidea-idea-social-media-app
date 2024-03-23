@@ -1,7 +1,7 @@
 package comment_model
 
 type CommentCreator struct {
-	UserId      int
+	UserId      string
 	Name        string
 	ImageUrl    string
 	FriendCount int
@@ -11,7 +11,7 @@ type CommentCreator struct {
 type Comment struct {
 	CommentId int
 	PostId    int
-	UserId    int
+	UserId    string
 	Comment   string
 	Creator   CommentCreator
 	CreatedAt string

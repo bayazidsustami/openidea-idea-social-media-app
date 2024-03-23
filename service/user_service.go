@@ -15,9 +15,9 @@ import (
 type UserService interface {
 	Register(ctx context.Context, request user_model.UserRegisterRequest) (user_model.UserRegisterResponse[user_model.UserData], error)
 	Login(ctx context.Context, request user_model.UserLoginRequest) (user_model.UserLoginResponse, error)
-	LinkEmail(ctx context.Context, userId int, emailReq user_model.UpdateEmailRequest) error
-	LinkPhone(ctx context.Context, userId int, phoneReq user_model.UpdatePhoneRequest) error
-	UpdateAccount(ctx context.Context, userId int, request user_model.UpdateAccountRequest) error
+	LinkEmail(ctx context.Context, userId string, emailReq user_model.UpdateEmailRequest) error
+	LinkPhone(ctx context.Context, userId string, phoneReq user_model.UpdatePhoneRequest) error
+	UpdateAccount(ctx context.Context, userId string, request user_model.UpdateAccountRequest) error
 }
 
 type UserServiceImpl struct {
@@ -163,7 +163,7 @@ func (service *UserServiceImpl) Login(ctx context.Context, request user_model.Us
 	return userResponse, nil
 }
 
-func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId int, emailReq user_model.UpdateEmailRequest) error {
+func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId string, emailReq user_model.UpdateEmailRequest) error {
 	err := service.Validator.Struct(emailReq)
 	if err != nil {
 		return customErr.ErrorBadRequest
@@ -182,7 +182,7 @@ func (service *UserServiceImpl) LinkEmail(ctx context.Context, userId int, email
 	return nil
 }
 
-func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId int, phoneReq user_model.UpdatePhoneRequest) error {
+func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId string, phoneReq user_model.UpdatePhoneRequest) error {
 	err := service.Validator.Struct(phoneReq)
 	if err != nil {
 		return customErr.ErrorBadRequest
@@ -201,7 +201,7 @@ func (service *UserServiceImpl) LinkPhone(ctx context.Context, userId int, phone
 	return nil
 }
 
-func (service *UserServiceImpl) UpdateAccount(ctx context.Context, userId int, request user_model.UpdateAccountRequest) error {
+func (service *UserServiceImpl) UpdateAccount(ctx context.Context, userId string, request user_model.UpdateAccountRequest) error {
 	err := service.Validator.Struct(request)
 	if err != nil {
 		return customErr.ErrorBadRequest

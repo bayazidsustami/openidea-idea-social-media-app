@@ -7,13 +7,14 @@ import (
 	friend_model "openidea-idea-social-media-app/models/friend"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type FriendsRepository interface {
 	Create(ctx context.Context, userFriends friend_model.Friend) error
 	Delete(ctx context.Context, userFriends friend_model.Friend) error
-	GetAll(ctx context.Context, userId int, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error)
+	GetAll(ctx context.Context, userId string, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error)
 }
 
 type FriendsRepositoryImpl struct {
@@ -39,6 +40,11 @@ func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends
 
 	res, err := conn.Exec(ctx, SQL_ADD_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
 	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Code == "23503" {
+				return customErr.ErrorNotFound
+			}
+		}
 		if err == pgx.ErrNoRows {
 			return customErr.ErrorBadRequest
 		} else {
@@ -80,7 +86,7 @@ func (repository *FriendsRepositoryImpl) Delete(ctx context.Context, userFriends
 
 }
 
-func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId int, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error) {
+func (repository *FriendsRepositoryImpl) GetAll(ctx context.Context, userId string, filterFriend friend_model.FilterFriends) (friend_model.FriendDataPaging, error) {
 	query := filterFriend.BuildQuery(userId)
 
 	conn, err := repository.DBPool.Acquire(ctx)
