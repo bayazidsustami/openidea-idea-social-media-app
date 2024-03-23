@@ -12,7 +12,7 @@ type FriendRequest struct {
 type FilterFriends struct {
 	SortBy   string `json:"sortBy" validate:"oneof=friendCount createdAt ''"`
 	OrderBy  string `json:"orderBy" validate:"oneof=asc desc ''"`
-	UserOnly bool   `json:"userOnly" validate:"boolean"`
+	UserOnly bool   `json:"onlyFriend" validate:"boolean"`
 	Limit    int    `json:"limit" validate:"number,gte=0"`
 	Offset   int    `json:"offset" validate:"number,gte=0"`
 	Search   string `json:"search"`
@@ -26,7 +26,7 @@ func (ff *FilterFriends) BuildQuery(userId string) string {
 
 	if ff.UserOnly {
 		query += "JOIN friends f2 ON u.user_id = f2.user_id_requester "
-		query += fmt.Sprintf("WHERE f2.user_id_accepter IN (SELECT u2.user_id FROM users u2 WHERE u2.user_id = %s) ", userId)
+		query += fmt.Sprintf("WHERE f2.user_id_accepter IN (SELECT u2.user_id FROM users u2 WHERE u2.user_id = '%s') ", userId)
 	}
 
 	if ff.Search != "" {
