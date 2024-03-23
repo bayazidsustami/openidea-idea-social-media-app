@@ -36,21 +36,14 @@ func (repository *CommentRepositoryImpl) Create(ctx context.Context, comment com
 	}
 
 	SQL_GET_POST_ID := "SELECT EXISTS (SELECT 1 FROM posts WHERE post_id = $1)"
-	var isPostExists bool
-
-	err = tx.QueryRow(ctx, SQL_GET_POST_ID, comment.PostId).Scan(&isPostExists)
+	_, err = tx.Exec(ctx, SQL_GET_POST_ID, comment.PostId)
 	if err != nil {
 		tx.Rollback(ctx)
 		if err == pgx.ErrNoRows {
-			return customErr.ErrorBadRequest
+			return customErr.ErrorNotFound
 		} else {
 			return customErr.ErrorInternalServer
 		}
-	}
-
-	if !isPostExists {
-		tx.Rollback(ctx)
-		return customErr.ErrorNotFound
 	}
 
 	SQL_GET_FRIEND := "SELECT EXISTS (SELECT 1 FROM users u " +

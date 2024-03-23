@@ -37,7 +37,7 @@ func (service *CommentServiceImpl) Create(ctx context.Context, userId string, re
 
 	castedPostId, err := strconv.Atoi(request.PostId)
 	if err != nil {
-		return customErr.ErrorBadRequest
+		return customErr.ErrorNotFound
 	}
 
 	comment := comment_model.Comment{
