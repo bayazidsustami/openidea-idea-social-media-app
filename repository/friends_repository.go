@@ -30,14 +30,53 @@ func NewFriendRepository(
 }
 
 func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends friend_model.Friend) error {
+	tx, err := repository.DBPool.Begin(ctx)
+	if err != nil {
+		return customErr.ErrorInternalServer
+	}
+
+	GET_USER_ID := "SELECT user_id FROM users WHERE user_id = $1"
+	res, err := tx.Exec(ctx, GET_USER_ID, userFriends.UserIdAccepter)
+	if err != nil {
+		tx.Rollback(ctx)
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorNotFound
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if res.RowsAffected() == 0 {
+		tx.Rollback(ctx)
+		return customErr.ErrorNotFound
+	}
+
+	CHECK_IS_FRIENDS := "SELECT EXISTS (SELECT 1 FROM friends f  WHERE f.user_id_requester = $1 OR f.user_id_accepter = $1)"
+	var isFriend bool
+	err = tx.QueryRow(ctx, CHECK_IS_FRIENDS, userFriends.UserIdAccepter).Scan(&isFriend)
+	if err != nil {
+		tx.Rollback(ctx)
+		if err == pgx.ErrNoRows {
+			return customErr.ErrorNotFound
+		} else {
+			return customErr.ErrorInternalServer
+		}
+	}
+
+	if isFriend {
+		tx.Rollback(ctx)
+		return customErr.ErrorBadRequest
+	}
+
 	SQL_ADD_FRIENDS := "INSERT INTO friends(user_id_requester, user_id_accepter) VALUES ($1, $2), ($2, $1) " +
 		"ON CONFLICT (user_id_requester, user_id_accepter) DO NOTHING"
 
-	res, err := repository.DBPool.Exec(ctx, SQL_ADD_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
+	res, err = tx.Exec(ctx, SQL_ADD_FRIENDS, userFriends.UserIdRequester, userFriends.UserIdAccepter)
 	if err != nil {
+		tx.Rollback(ctx)
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			if pgErr.Code == "23503" {
-				return customErr.ErrorNotFound
+				return customErr.ErrorBadRequest
 			}
 		}
 		if err == pgx.ErrNoRows {
@@ -48,8 +87,11 @@ func (repository *FriendsRepositoryImpl) Create(ctx context.Context, userFriends
 	}
 
 	if res.RowsAffected() == 0 {
+		tx.Rollback(ctx)
 		return customErr.ErrorBadRequest
 	}
+
+	tx.Commit(ctx)
 
 	return nil
 }
