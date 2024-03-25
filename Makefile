@@ -28,7 +28,9 @@ build-docker:
 
 run-docker:
 	docker run \
-	--rm -d \
+	--rm \
+	--pid=host \
+	-d \
 	--name social-app-container  \
 	-e DB_NAME=$(shell echo $$DB_NAME) \
 	-e DB_USERNAME=$(shell echo $$DB_USERNAME) \
