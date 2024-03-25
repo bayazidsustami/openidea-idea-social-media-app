@@ -151,10 +151,6 @@ Contributions are welcome! Feel free to submit issues or pull requests.
 
 This project is licensed under the [MIT License](LICENSE).
 
-## Author
- @bayazidsustami
- @lbex
-
 ## Acknowledgements
 
 - [Fiber](https://github.com/gofiber/fiber): Fast HTTP framework for Go.
