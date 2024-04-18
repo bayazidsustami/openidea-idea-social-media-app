@@ -2,7 +2,6 @@ package app
 
 import (
 	"log"
-	"openidea-idea-social-media-app/config"
 	"openidea-idea-social-media-app/customErr"
 	"openidea-idea-social-media-app/db"
 
@@ -14,12 +13,9 @@ import (
 
 func StartFiberApp(port string, prefork bool) {
 	app := fiber.New(fiber.Config{
-		JSONEncoder:  json.Marshal,
-		JSONDecoder:  json.Unmarshal,
-		IdleTimeout:  config.IdleTimeout,
-		WriteTimeout: config.WriteTimeout,
-		ReadTimeout:  config.ReadTimeout,
-		Prefork:      prefork,
+		JSONEncoder: json.Marshal,
+		JSONDecoder: json.Unmarshal,
+		Prefork:     prefork,
 	})
 
 	prometheus := fiberprometheus.New("social-app-service")
