@@ -7,7 +7,9 @@ import (
 	"sync"
 	"time"
 
+	pgxpool_prometheus "github.com/cmackenzie1/pgxpool-prometheus"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/viper"
 )
 
@@ -57,6 +59,8 @@ func GetConnectionPool() *pgxpool.Pool {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		prometheus.MustRegister(pgxpool_prometheus.NewPgxPoolStatsCollector(dbPool, viper.GetString("DB_NAME")))
 	})
 
 	return dbPool

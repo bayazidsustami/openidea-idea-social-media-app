@@ -5,12 +5,14 @@ go 1.21.3
 require (
 	github.com/ansrivas/fiberprometheus/v2 v2.6.1
 	github.com/aws/aws-sdk-go v1.51.1
+	github.com/cmackenzie1/pgxpool-prometheus v0.5.0
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/goccy/go-json v0.10.2
 	github.com/gofiber/contrib/jwt v1.0.8
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jackc/pgx/v5 v5.5.5
+	github.com/prometheus/client_golang v1.16.0
 	github.com/spf13/viper v1.18.2
 	golang.org/x/crypto v0.21.0
 )
@@ -42,7 +44,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
-	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.0 // indirect
